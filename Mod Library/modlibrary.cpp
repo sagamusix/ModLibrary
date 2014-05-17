@@ -9,6 +9,7 @@
 
 #include "modlibrary.h"
 #include "modinfo.h"
+#include "about.h"
 #include "database.h"
 #include <QMessageBox>
 #include <QFileDialog>
@@ -38,6 +39,7 @@ ModLibrary::ModLibrary(QWidget *parent)
 	connect(ui.actionAddFile, SIGNAL(triggered()), this, SLOT(OnAddFile()));
 	connect(ui.actionAddFolder, SIGNAL(triggered()), this, SLOT(OnAddFolder()));
 	connect(ui.actionExportPlaylist, SIGNAL(triggered()), this, SLOT(OnExportPlaylist()));
+	connect(ui.actionAbout, SIGNAL(triggered()), this, SLOT(OnAbout()));
 
 	// Search navigation
 	connect(ui.doSearch, SIGNAL(clicked()), this, SLOT(OnSearch()));
@@ -288,6 +290,7 @@ void ModLibrary::DoSearch(bool showAll)
 
 		QTableWidgetItem *item = new QTableWidgetItem(mod.title.isEmpty() ? QFileInfo(mod.fileName).fileName() : mod.title);
 		item->setData(Qt::UserRole, mod.fileName);
+		item->setToolTip(QDir::toNativeSeparators(mod.fileName));
 		ui.resultTable->setItem(row, 0, item);
 
 		QString sizeStr;
@@ -347,7 +350,7 @@ void ModLibrary::OnSelectAllButOne(QCheckBoxEx *sender)
 void ModLibrary::OnCellClicked(int row, int /*col*/)
 {
 	QString fileName = ui.resultTable->item(row, 0)->data(Qt::UserRole).toString();
-	ModInfo dlg(fileName);
+	ModInfo dlg(fileName, this);
 	dlg.exec();
 }
 
@@ -416,7 +419,7 @@ void ModLibrary::OnPasteMPT()
 		int prevNote;
 		do
 		{
-			prevNote = 0;
+			prevNote = -1;
 			for(auto line = lines.cbegin(); line != lines.cend(); line++)
 			{
 				int offset = -1;
@@ -432,6 +435,9 @@ void ModLibrary::OnPasteMPT()
 				{
 					continue;
 				}
+
+				// This appears to be a valid channel
+				if(prevNote == -1) prevNote = 0;
 
 				int note = 0;
 				char octave = line->at(offset + 3).toLatin1();
@@ -462,9 +468,16 @@ void ModLibrary::OnPasteMPT()
 			{
 				melody += "|";
 			}
-		} while (prevNote != 0);
+		} while (prevNote != -1);
 
 
 		ui.melody->setText(melody);
 	}
+}
+
+
+void ModLibrary::OnAbout()
+{
+	AboutDialog dlg(this);
+	dlg.exec();
 }

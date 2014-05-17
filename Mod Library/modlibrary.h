@@ -36,6 +36,7 @@ protected slots:
 	void OnCellClicked(int row, int col);
 	void OnExportPlaylist();
 	void OnPasteMPT();
+	void OnAbout();
 
 protected:
 	void DoSearch(bool showAll);

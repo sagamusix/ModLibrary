@@ -194,6 +194,10 @@
            <height>20</height>
           </rect>
          </property>
+         <property name="toolTip">
+          <string>Enter a melody as a sequence of space-separated relative note offsets.
+Several individual melodies can be searched for by separating them with a pipe (|) character.</string>
+         </property>
         </widget>
         <widget class="QPushButton" name="pasteMPT">
          <property name="geometry">
@@ -537,6 +541,8 @@
    <addaction name="actionMaintain"/>
    <addaction name="actionShow"/>
    <addaction name="actionExportPlaylist"/>
+   <addaction name="separator"/>
+   <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAddFile">
@@ -577,6 +583,14 @@
    </property>
    <property name="toolTip">
     <string>Export the result of the current search as a playlist file</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>A&amp;bout...</string>
+   </property>
+   <property name="toolTip">
+    <string>About Mod Library</string>
    </property>
   </action>
  </widget>
