@@ -73,8 +73,8 @@ public:
 	AddResult AddModule(const QString &path);
 	AddResult UpdateModule(const QString &path);
 	bool UpdateComments(const QString &path, const QString &comments);
-	Module GetModule(const QString &path);
-	static Module GetModule(QSqlQuery &query);
+	void GetModule(const QString &path, Module &mod);
+	static void GetModule(QSqlQuery &query, Module &mod);
 	bool RemoveModule(const QString &path);
 
 	QSqlDatabase &GetDB() { return db; }

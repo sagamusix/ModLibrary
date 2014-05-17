@@ -170,7 +170,7 @@ static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 {
 	const auto numChannels = mod.get_num_channels();
 	const auto numSongs = mod.get_num_subsongs();
-	int8_t lastNote = 0;
+	int8_t prevNote = 0;
 	for(auto s = 0; s < numSongs; s++)
 	{
 		mod.select_subsong(s);
@@ -179,7 +179,7 @@ static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 		for(auto c = 0; c < numChannels; c++)
 		{
 			// Go through the complete module channel by channel.
-			notes.push_back(-lastNote);
+			notes.push_back(-prevNote);
 			for(auto o = 0; o < numOrders; o++)
 			{
 				const auto p = mod.get_order_pattern(o);
@@ -189,8 +189,8 @@ static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 					const uint8_t note = mod.get_pattern_row_channel_command(p, r, c, openmpt::module::command_note);
 					if(note > 0 && note <= 128)
 					{
-						notes.push_back(static_cast<int8_t>(note) - lastNote);
-						lastNote = note;
+						notes.push_back(static_cast<int8_t>(note) - prevNote);
+						prevNote = note;
 					}
 				}
 			}
@@ -278,18 +278,17 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 }
 
 
-Module ModDatabase::GetModule(const QString &path)
+void ModDatabase::GetModule(const QString &path, Module &mod)
 {
 	selectQuery.bindValue(":filename", QDir::fromNativeSeparators(path));
 	selectQuery.exec();
 	selectQuery.next();
-	return GetModule(selectQuery);
+	GetModule(selectQuery, mod);
 }
 
 
-Module ModDatabase::GetModule(QSqlQuery &query)
+void ModDatabase::GetModule(QSqlQuery &query, Module &mod)
 {
-	Module mod;
 	mod.hash = query.value("hash").toString();
 	mod.fileName = query.value("filename").toString();
 	mod.fileSize = query.value("filesize").toInt();
@@ -309,7 +308,6 @@ Module ModDatabase::GetModule(QSqlQuery &query)
 	mod.comments = query.value("comments").toString();
 	mod.artist = query.value("artist").toString();
 	mod.personalComment = query.value("personal_comments").toString();
-	return mod;
 }
 
 

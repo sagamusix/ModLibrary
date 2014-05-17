@@ -35,7 +35,8 @@ ModInfo::ModInfo(const QString &fileName, QWidget *parent)
 		}
 	}
 	
-	Module mod = ModDatabase::Instance().GetModule(fileName);
+	Module mod;
+	ModDatabase::Instance().GetModule(fileName, mod);
 	ui.songTitle->setText(mod.title);
 	QString info;
 	if(!mod.artist.isEmpty())

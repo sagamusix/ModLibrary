@@ -25,12 +25,14 @@ currently untested.
 Mod Library has the following external dependencies:
 
  -  Qt 5 (http://qt-project.org/)
-
+ 
  -  libopenmpt (http://lib.openmpt.org/)
+ 
     The Visual Studio solution assumes this to be placed in the folder
     lib/libopenmpt/
 
  -  PortAudio (http://portaudio.com/)
+ 
     The Visual Studio solution assumes this to be placed in the folder
     lib/libopempt/include/portaudio/ as the libopenmpt Windows package already
     comes with its own PortAudio package.

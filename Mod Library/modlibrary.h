@@ -35,6 +35,7 @@ protected slots:
 	void OnSelectAllButOne(QCheckBoxEx *sender);
 	void OnCellClicked(int row, int col);
 	void OnExportPlaylist();
+	void OnPasteMPT();
 
 protected:
 	void DoSearch(bool showAll);

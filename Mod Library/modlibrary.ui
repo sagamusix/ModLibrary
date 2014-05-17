@@ -39,7 +39,7 @@
       <item row="3" column="0">
        <widget class="QPushButton" name="doSearch">
         <property name="text">
-         <string>Find</string>
+         <string>F&amp;ind</string>
         </property>
         <property name="autoDefault">
          <bool>true</bool>
@@ -190,9 +190,22 @@
           <rect>
            <x>10</x>
            <y>20</y>
-           <width>113</width>
+           <width>121</width>
            <height>20</height>
           </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pasteMPT">
+         <property name="geometry">
+          <rect>
+           <x>134</x>
+           <y>20</y>
+           <width>111</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>&amp;Paste from OpenMPT</string>
          </property>
         </widget>
        </widget>
@@ -530,25 +543,40 @@
    <property name="text">
     <string>Add &amp;File...</string>
    </property>
+   <property name="toolTip">
+    <string>Add one more more files to the database</string>
+   </property>
   </action>
   <action name="actionMaintain">
    <property name="text">
     <string>&amp;Maintain...</string>
+   </property>
+   <property name="toolTip">
+    <string>Update module information and remove deleted files from the database</string>
    </property>
   </action>
   <action name="actionShow">
    <property name="text">
     <string>&amp;Show All...</string>
    </property>
+   <property name="toolTip">
+    <string>Show all files</string>
+   </property>
   </action>
   <action name="actionAddFolder">
    <property name="text">
     <string>&amp;Add Folder...</string>
    </property>
+   <property name="toolTip">
+    <string>Add a folder (including subfolders) to the database</string>
+   </property>
   </action>
   <action name="actionExportPlaylist">
    <property name="text">
     <string>&amp;Export Playlist</string>
+   </property>
+   <property name="toolTip">
+    <string>Export the result of the current search as a playlist file</string>
    </property>
   </action>
  </widget>

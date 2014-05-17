@@ -14,6 +14,7 @@
 #include <QFileDialog>
 #include <QThread>
 #include <QProgressDialog>
+#include <QClipboard>
 #include <utility>
 #include <libopenmpt/libopenmpt.hpp>
 
@@ -44,6 +45,7 @@ ModLibrary::ModLibrary(QWidget *parent)
 	connect(ui.actionMaintain, SIGNAL(triggered()), this, SLOT(OnMaintain()));
 	connect(ui.findWhat, SIGNAL(returnPressed()), this, SLOT(OnSearch()));
 	connect(ui.melody, SIGNAL(returnPressed()), this, SLOT(OnSearch()));
+	connect(ui.pasteMPT, SIGNAL(clicked()), this, SLOT(OnPasteMPT()));
 
 	connect(ui.resultTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellClicked(int, int)));
 	ui.resultTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
@@ -267,9 +269,11 @@ void ModLibrary::DoSearch(bool showAll)
 	ui.resultTable->setUpdatesEnabled(false);
 	ui.resultTable->setSortingEnabled(false);
 	setCursor(Qt::BusyCursor);
+	// TODO: This stuff is *slow*. One culprit is GetModule, probably because of all the temporary QString objects form the value() calls' parameters.
 	while(query.next())
 	{
-		Module mod = ModDatabase::GetModule(query);
+		Module mod;
+		ModDatabase::GetModule(query, mod);
 		ui.resultTable->insertRow(row);
 
 		QTableWidgetItem *item = new QTableWidgetItem(mod.title.isEmpty() ? QFileInfo(mod.fileName).fileName() : mod.title);
@@ -370,5 +374,60 @@ void ModLibrary::OnExportPlaylist()
 				unsetCursor();
 			}
 		}
+	}
+}
+
+
+// Interpret pasted OpenMPT pattern format for melody search
+void ModLibrary::OnPasteMPT()
+{
+	const QString notes[] = { "C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-" };
+	const QClipboard *clipboard = QApplication::clipboard();
+	const QMimeData *mimeData = clipboard->mimeData();
+
+	if(mimeData->hasText())
+	{
+		QString melody;
+		QString data = mimeData->text();
+		auto offset = data.indexOf("ModPlug Tracker ");
+		if(offset == -1)
+		{
+			return;
+		}
+		data.remove(0, offset + 16);
+		auto lines = data.split('\n');
+		int prevNote = 0;
+		for(auto line = lines.cbegin(); line != lines.cend(); line++)
+		{
+			auto offset = line->indexOf("|");
+			if(offset != -1)
+			{
+				int note = 0;
+				char octave = line->at(offset + 3).toLatin1();
+				if(octave >= '0' && octave <= '9')
+				{
+					const auto noteStr = line->midRef(offset + 1, 2);
+					for(auto i = 0; i < 12; i++)
+					{
+						if(notes[i] == noteStr)
+						{
+							note = i + (octave - '0') * 12;
+							break;
+						}
+					}
+				}
+				if(note)
+				{
+					int diff = note - prevNote;
+					if(prevNote)
+					{
+						melody += QString::number(diff) + " ";
+					}
+					prevNote = note;
+				}
+			}
+		}
+
+		ui.melody->setText(melody);
 	}
 }
