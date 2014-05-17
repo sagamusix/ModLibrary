@@ -123,6 +123,12 @@ void ModDatabase::Open()
 	{
 		throw Exception("Cannot prepare select query: ", selectQuery.lastError());
 	}
+
+	removeQuery = QSqlQuery(db);
+	if(!removeQuery.prepare("DELETE FROM `modlib_modules` WHERE `filename` = :filename"))
+	{
+		throw Exception("Cannot prepare delete query: ", selectQuery.lastError());
+	}
 }
 
 
@@ -304,4 +310,11 @@ Module ModDatabase::GetModule(QSqlQuery &query)
 	mod.artist = query.value("artist").toString();
 	mod.personalComment = query.value("personal_comments").toString();
 	return mod;
+}
+
+
+bool ModDatabase::RemoveModule(const QString &path)
+{
+	removeQuery.bindValue(":filename", QDir::fromNativeSeparators(path));
+	return removeQuery.exec();
 }

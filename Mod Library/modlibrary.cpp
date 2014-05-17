@@ -29,7 +29,7 @@ ModLibrary::ModLibrary(QWidget *parent)
 	} catch(ModDatabase::Exception &e)
 	{
 		QMessageBox(QMessageBox::Critical, "Mod Library", e.what()).exec();
-		close();
+		QTimer::singleShot(0, this, SLOT(close()));
 		return;
 	}
 
@@ -84,7 +84,7 @@ void ModLibrary::OnAddFile()
 		}
 	}
 
-	QFileDialog dlg(this, "Select file(s) to scan...", lastDir, "Module files (" + modExtensions + ");;All files (*.*)");
+	QFileDialog dlg(this, "Select file(s) to add...", lastDir, "Module files (" + modExtensions + ");;All files (*.*)");
 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
 	dlg.setFileMode(QFileDialog::ExistingFiles);
 	if(dlg.exec())
@@ -111,7 +111,7 @@ void ModLibrary::OnAddFile()
 
 void ModLibrary::OnAddFolder()
 {
-	QFileDialog dlg(this, "Select folder to scan...", lastDir);
+	QFileDialog dlg(this, "Select folder to add...", lastDir);
 	dlg.setFileMode(QFileDialog::DirectoryOnly);
 	if(dlg.exec())
 	{
@@ -130,8 +130,6 @@ void ModLibrary::OnAddFolder()
 		while(di.hasNext() && !progress.wasCanceled())
 		{
 			const QString fileName = di.next();
-			//ui.statusBar->showMessage(QString("Analyzing %1... %2 files added, %3 files updated.").arg(QDir::toNativeSeparators(fileName)).arg(addedFiles).arg(updatedFiles));
-			//update();
 			progress.setLabelText(QString("Analyzing %1...\n%2 files added, %3 files updated.").arg(QDir::toNativeSeparators(fileName)).arg(addedFiles).arg(updatedFiles));
 			QCoreApplication::processEvents();
 			switch(ModDatabase::Instance().AddModule(fileName))
@@ -178,9 +176,9 @@ void ModLibrary::OnMaintain()
 		case ModDatabase::NoChange:
 			break;
 		case ModDatabase::IOError:
-		default:
+		case ModDatabase::NotAdded:
 			removedFiles++;
-			// TODO
+			ModDatabase::Instance().RemoveModule(fileName);
 			break;
 		}
 		progress.setValue(++files);

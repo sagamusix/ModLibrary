@@ -11,9 +11,7 @@
 #include "database.h"
 #include "audioplayer.h"
 #include <QMenu>
-#ifdef WIN32
-#include <Windows.h>
-#endif
+#include <QMessageBox>
 
 
 ModInfo::ModInfo(const QString &fileName, QWidget *parent)
@@ -25,7 +23,17 @@ ModInfo::ModInfo(const QString &fileName, QWidget *parent)
 	ui.fileName->setText(nativeName);
 	this->setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 
-	ModDatabase::Instance().UpdateModule(fileName);
+	if(ModDatabase::Instance().UpdateModule(fileName) & ModDatabase::Error)
+	{
+		QMessageBox mb(QMessageBox::Question, "Mod Library", "Error while loading information for file\n" + nativeName + "\nWould you like to remove it form the database?", QMessageBox::Yes | QMessageBox::No);
+		mb.setDefaultButton(QMessageBox::Yes);
+		if(mb.exec() == QMessageBox::Yes)
+		{
+			ModDatabase::Instance().RemoveModule(fileName);
+			QTimer::singleShot(0, this, SLOT(close()));
+			return;
+		}
+	}
 	
 	Module mod = ModDatabase::Instance().GetModule(fileName);
 	ui.songTitle->setText(mod.title);
@@ -89,9 +97,9 @@ void ModInfo::OnOpenFileMenu()
 
 void ModInfo::OnOpenExplorer()
 {
-#ifdef WIN32
-	ShellExecuteW(NULL, L"open", L"explorer", (L"/select,\"" + fileName.toStdWString() + L"\"").c_str(), NULL, SW_SHOW);
-#endif
+	QStringList args;
+	args << "/select," << QDir::toNativeSeparators(fileName);
+	QProcess::startDetached("explorer", args);
 }
 
 

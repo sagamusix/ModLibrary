@@ -40,16 +40,19 @@ class ModDatabase
 protected:
 	static ModDatabase instance;
 	QSqlDatabase db;
-	QSqlQuery insertQuery, updateQuery, updateCommentsQuery, selectQuery;
+	QSqlQuery insertQuery, updateQuery, updateCommentsQuery, selectQuery, removeQuery;
 
 public:
 	enum AddResult
 	{
-		NotAdded,
-		IOError,
-		Added,
-		Updated,
-		NoChange,
+		NotAdded	= 0x01,
+		IOError		= 0x02,
+		Added		= 0x04,
+		Updated		= 0x08,
+		NoChange	= 0x10,
+
+		Error		= NotAdded | IOError,
+		OK			= Added | Updated | NoChange,
 	};
 
 	class Exception
@@ -72,6 +75,8 @@ public:
 	bool UpdateComments(const QString &path, const QString &comments);
 	Module GetModule(const QString &path);
 	static Module GetModule(QSqlQuery &query);
+	bool RemoveModule(const QString &path);
+
 	QSqlDatabase &GetDB() { return db; }
 
 protected:
