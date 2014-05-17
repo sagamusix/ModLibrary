@@ -198,7 +198,7 @@ void ModLibrary::DoSearch(bool showAll)
 		.replace('?', "_");
 	what = "%" + what + "%";
 
-	QByteArray melodyBytes;
+	std::vector<QByteArray> melodyBytes;
 
 	QString queryStr = "SELECT * FROM `modlib_modules` ";
 	if(!showAll)
@@ -240,25 +240,35 @@ void ModLibrary::DoSearch(bool showAll)
 			if(timeMin > timeMax) std::swap(timeMin, timeMax);
 			queryStr += "AND (`length` BETWEEN " + QString::number(timeMin) + " AND " + QString::number(timeMax) + ") ";
 		}
-		QString melody = ui.melody->text();
-		// TODO: Ability to search for more than one sequence
-		auto notes = melody.simplified().split(' ');
-		if(!notes.isEmpty())
+
+		// Search for melody
+		const auto melodies = ui.melody->text().split('|');
+		int melodyCount = 0;
+		for(auto melody = melodies.cbegin(); melody != melodies.cend(); melody++)
 		{
-			melodyBytes.reserve(notes.size());
-			for(auto note = notes.cbegin(); note != notes.cend(); note++)
+			const auto notes = melody->simplified().split(' ');
+			if(!notes.isEmpty())
 			{
-				int8_t n = static_cast<int8_t>(note->toInt());
-				melodyBytes.push_back(n);
+				melodyBytes.push_back(QByteArray());
+				melodyBytes[melodyCount].reserve(notes.size());
+				for(auto note = notes.cbegin(); note != notes.cend(); note++)
+				{
+					int8_t n = static_cast<int8_t>(note->toInt());
+					melodyBytes[melodyCount].push_back(n);
+				}
+				queryStr += "AND INSTR(`note_data`, :note_data" + QString::number(melodyCount) + ") > 0 ";
+				melodyCount++;
 			}
-			queryStr += "AND INSTR(`note_data`, :note_data) > 0";
 		}
 	}
 
 	QSqlQuery query(ModDatabase::Instance().GetDB());
 	query.prepare(queryStr);
 	query.bindValue(":str", what);
-	query.bindValue(":note_data", melodyBytes);
+	for(size_t i = 0; i < melodyBytes.size(); i++)
+	{
+		query.bindValue(":note_data" + QString::number(i), melodyBytes[i]);
+	}
 	query.exec();
 
 	ui.resultTable->clearContents();
@@ -299,6 +309,12 @@ void ModLibrary::DoSearch(bool showAll)
 	ui.resultTable->setSortingEnabled(true);
 	ui.resultTable->setUpdatesEnabled(true);
 	ui.statusBar->showMessage(QString("%1 files found.").arg(row));
+
+	if(row == 1 && !showAll)
+	{
+		// Show the only result
+		OnCellClicked(0, 0);
+	}
 }
 
 
@@ -396,12 +412,27 @@ void ModLibrary::OnPasteMPT()
 		}
 		data.remove(0, offset + 16);
 		auto lines = data.split('\n');
-		int prevNote = 0;
-		for(auto line = lines.cbegin(); line != lines.cend(); line++)
+		int channels = 0;
+		int prevNote;
+		do
 		{
-			auto offset = line->indexOf("|");
-			if(offset != -1)
+			prevNote = 0;
+			for(auto line = lines.cbegin(); line != lines.cend(); line++)
 			{
+				int offset = -1;
+				for(int i = 0; i <= channels; i++)
+				{
+					offset = line->indexOf("|", offset + 1);
+					if(offset == -1)
+					{
+						break;
+					}
+				}
+				if(offset == -1)
+				{
+					continue;
+				}
+
 				int note = 0;
 				char octave = line->at(offset + 3).toLatin1();
 				if(octave >= '0' && octave <= '9')
@@ -426,7 +457,13 @@ void ModLibrary::OnPasteMPT()
 					prevNote = note;
 				}
 			}
-		}
+			channels++;
+			if(prevNote)
+			{
+				melody += "|";
+			}
+		} while (prevNote != 0);
+
 
 		ui.melody->setText(melody);
 	}

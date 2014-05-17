@@ -11,7 +11,7 @@ This software is currently in a very early development stage. Many things are
 still expected to change. Since there has been no "official" release yet, you
 should not expect that the database schema remains stable until that release.
 
-Later version of the software will naturally support schema upgrades (the code
+Later versions of the software will naturally support schema upgrades (the code
 for this does already exist), but until the first release, the schema version
 will stay at version 1. In the worst case, you will have to delete the database
 file and recreate your module database.  
