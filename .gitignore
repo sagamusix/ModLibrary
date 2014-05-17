@@ -1,3 +1,13 @@
 *.vo
 *.glob
 *.v.d
+/ipch
+/*.sdf
+/*.suo
+/bin/Win32
+/build/Win32
+/Mod Library/GeneratedFiles
+/Mod Library/*.aps
+/Mod Library/*.user
+/*.opensdf
+/lib/libopenmpt
