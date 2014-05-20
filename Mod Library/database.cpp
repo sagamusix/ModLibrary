@@ -178,8 +178,8 @@ static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 		notes.reserve(notes.size() + numChannels * numOrders * 64);
 		for(auto c = 0; c < numChannels; c++)
 		{
-			// Go through the complete module channel by channel.
-			notes.push_back(-prevNote);
+			// Go through the complete sequence channel by channel.
+			if(prevNote) notes.push_back(-prevNote);
 			for(auto o = 0; o < numOrders; o++)
 			{
 				const auto p = mod.get_order_pattern(o);

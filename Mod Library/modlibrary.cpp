@@ -202,7 +202,7 @@ void ModLibrary::DoSearch(bool showAll)
 
 	std::vector<QByteArray> melodyBytes;
 
-	QString queryStr = "SELECT * FROM `modlib_modules` ";
+	QString queryStr = "SELECT `filename`, `title`, `filesize`, `filedate` FROM `modlib_modules` ";
 	if(!showAll)
 	{
 		queryStr += "WHERE (0 ";
@@ -273,38 +273,43 @@ void ModLibrary::DoSearch(bool showAll)
 	}
 	query.exec();
 
-	ui.resultTable->clearContents();
-	ui.resultTable->setColumnCount(3);
+	//ui.resultTable->setColumnCount(3);
 	ui.resultTable->setRowCount(0);
 	//ui.resultTable->setRowCount(query.size());	// Not supported by sqlite
 	int row = 0;
 	ui.resultTable->setUpdatesEnabled(false);
 	ui.resultTable->setSortingEnabled(false);
 	setCursor(Qt::BusyCursor);
-	// TODO: This stuff is *slow*. One culprit is GetModule, probably because of all the temporary QString objects form the value() calls' parameters.
+
+	// TODO: This stuff is *slow*.
+	QString fileName, title, fileDate;
+	int fileSize;
 	while(query.next())
 	{
-		Module mod;
-		ModDatabase::GetModule(query, mod);
 		ui.resultTable->insertRow(row);
 
-		QTableWidgetItem *item = new QTableWidgetItem(mod.title.isEmpty() ? QFileInfo(mod.fileName).fileName() : mod.title);
-		item->setData(Qt::UserRole, mod.fileName);
-		item->setToolTip(QDir::toNativeSeparators(mod.fileName));
+		fileName = query.value(0).toString();
+		title = query.value(1).toString();
+		fileSize = query.value(2).toInt();
+		fileDate = QDateTime::fromTime_t(query.value("filedate").toInt()).toString(Qt::SystemLocaleShortDate);
+
+		QTableWidgetItem *item = new QTableWidgetItem(title.isEmpty() ? QFileInfo(fileName).fileName() : title);
+		item->setData(Qt::UserRole, fileName);
+		item->setToolTip(QDir::toNativeSeparators(fileName));
 		ui.resultTable->setItem(row, 0, item);
 
 		QString sizeStr;
-		if(mod.fileSize < 1024)
-			sizeStr = QString::number(mod.fileSize) + " B";
-		else if(mod.fileSize < 1024 * 1024)
-			sizeStr = QString::number(mod.fileSize / 1024) + " KiB";
+		if(fileSize < 1024)
+			sizeStr = QString::number(fileSize) + " B";
+		else if(fileSize < 1024 * 1024)
+			sizeStr = QString::number(fileSize / 1024) + " KiB";
 		else
-			sizeStr = QString("%1.%2 MiB").arg(mod.fileSize / (1024 * 1024)).arg((((mod.fileSize / 1024) % 1024) * 100) / 1024, 2, 10, QChar('0'));
+			sizeStr = QString("%1.%2 MiB").arg(fileSize / (1024 * 1024)).arg((((fileSize / 1024) % 1024) * 100) / 1024, 2, 10, QChar('0'));
 		item = new QTableWidgetItem(sizeStr);
 		item->setData(Qt::TextAlignmentRole, (int)Qt::AlignRight | Qt::AlignVCenter);
 		ui.resultTable->setItem(row, 1, item);
 
-		ui.resultTable->setItem(row, 2, new QTableWidgetItem(mod.fileDate.toString(Qt::SystemLocaleShortDate)));
+		ui.resultTable->setItem(row, 2, new QTableWidgetItem(fileDate));
 		ui.resultTable->setRowHeight(row, 20);
 		row++;
 	}

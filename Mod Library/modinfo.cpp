@@ -115,7 +115,7 @@ void ModInfo::OnPlay()
 		}
 
 		QThread *thread = new QThread;
-		audio = new AudioThread(file);
+		audio = new AudioThread(file, ui.volumeSlider->value());
 		audio->moveToThread(thread);
 		connect(thread, SIGNAL(started()), audio, SLOT(process()));
 		connect(audio, SIGNAL(finished()), thread, SLOT(quit()));
@@ -136,6 +136,6 @@ void ModInfo::OnVolumeChanged(int volume)
 {
 	if(audio != nullptr)
 	{
-		audio->mod.set_render_param(openmpt::module::RENDER_MASTERGAIN_MILLIBEL, (volume - 100) * 50);
+		audio->setVolume(volume);
 	}
 }

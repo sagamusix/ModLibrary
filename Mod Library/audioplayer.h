@@ -20,12 +20,13 @@ class AudioThread : public QObject
 
 protected:
 	QByteArray content;
-public:
 	openmpt::module mod;
+	int volume;
+public:
 	volatile bool kill;
 
 public:
-	AudioThread(QFile &file) : content(file.readAll()), mod(content.begin(), content.end()), kill(false) { }
+	AudioThread(QFile &file, int v) : content(file.readAll()), mod(content.begin(), content.end()), kill(false) { setVolume(v); }
 
 public slots:
 	void process()
@@ -43,7 +44,7 @@ public slots:
 		streamparameters.channelCount = 2;
 		streamparameters.sampleFormat = paFloat32 | paNonInterleaved;
 		streamparameters.suggestedLatency = Pa_GetDeviceInfo(streamparameters.device)->defaultHighOutputLatency;
-		Pa_OpenStream(&stream, NULL, &streamparameters, samplerate, paFramesPerBufferUnspecified, 0, NULL, NULL);
+		Pa_OpenStream(&stream, nullptr, &streamparameters, samplerate, paFramesPerBufferUnspecified, 0, nullptr, nullptr);
 		Pa_StartStream(stream);
 		while(!kill)
 		{
@@ -59,6 +60,12 @@ public slots:
 		Pa_CloseStream(stream);
 		Pa_Terminate();
 		emit finished();
+	}
+
+	void setVolume(int v)
+	{
+		volume = v;
+		mod.set_render_param(openmpt::module::RENDER_MASTERGAIN_MILLIBEL, (volume - 100) * 50);
 	}
 
 signals:
