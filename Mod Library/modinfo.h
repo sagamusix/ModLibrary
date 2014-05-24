@@ -15,6 +15,11 @@
 
 class AudioThread;
 
+class DefaultPrograms
+{
+	QString name, path, parameters;
+};
+
 class ModInfo : public QDialog
 {
 	Q_OBJECT

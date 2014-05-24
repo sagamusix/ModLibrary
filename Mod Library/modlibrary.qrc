@@ -1,5 +1,12 @@
 <RCC>
   <qresource prefix="ModLibrary">
+    <file>Resources/Help.png</file>
+    <file>Resources/TableHS.png</file>
+    <file>Resources/Playlist.png</file>
+    <file>Resources/Refresh.png</file>
+    <file>Resources/Tools.png</file>
+    <file>Resources/NewDocumentHS.png</file>
+    <file>Resources/NewFolderHS.png</file>
     <file>icon.ico</file>
   </qresource>
 </RCC>

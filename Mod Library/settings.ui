@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>StandardApplications</class>
- <widget class="QDialog" name="StandardApplications">
+ <class>Settings</class>
+ <widget class="QDialog" name="Settings">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>498</width>
-    <height>211</height>
+    <width>488</width>
+    <height>228</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Standard Applications</string>
+   <string>Settings</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+  <layout class="QFormLayout" name="formLayout">
+   <item row="1" column="0">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QListView" name="applications"/>
@@ -93,13 +100,23 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="0">
+   <item row="3" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="comboBox"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Default action for double-clicking module:</string>
      </property>
     </widget>
    </item>
@@ -110,7 +127,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>StandardApplications</receiver>
+   <receiver>Settings</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -126,7 +143,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>StandardApplications</receiver>
+   <receiver>Settings</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

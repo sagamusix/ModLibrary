@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>841</width>
-    <height>605</height>
+    <height>633</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -529,6 +529,15 @@ Several individual melodies can be searched for by separating them with a pipe (
    </layout>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="iconSize">
+    <size>
+     <width>24</width>
+     <height>24</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -542,42 +551,63 @@ Several individual melodies can be searched for by separating them with a pipe (
    <addaction name="actionShow"/>
    <addaction name="actionExportPlaylist"/>
    <addaction name="separator"/>
+   <addaction name="actionSettings"/>
    <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAddFile">
+   <property name="icon">
+    <iconset resource="modlibrary.qrc">
+     <normaloff>:/ModLibrary/Resources/NewDocumentHS.png</normaloff>:/ModLibrary/Resources/NewDocumentHS.png</iconset>
+   </property>
    <property name="text">
-    <string>Add &amp;File...</string>
+    <string>Add &amp;File</string>
    </property>
    <property name="toolTip">
     <string>Add one more more files to the database</string>
    </property>
   </action>
   <action name="actionMaintain">
+   <property name="icon">
+    <iconset resource="modlibrary.qrc">
+     <normaloff>:/ModLibrary/Resources/Refresh.png</normaloff>:/ModLibrary/Resources/Refresh.png</iconset>
+   </property>
    <property name="text">
-    <string>&amp;Maintain...</string>
+    <string>&amp;Update Files</string>
    </property>
    <property name="toolTip">
     <string>Update module information and remove deleted files from the database</string>
    </property>
   </action>
   <action name="actionShow">
+   <property name="icon">
+    <iconset resource="modlibrary.qrc">
+     <normaloff>:/ModLibrary/Resources/TableHS.png</normaloff>:/ModLibrary/Resources/TableHS.png</iconset>
+   </property>
    <property name="text">
-    <string>&amp;Show All...</string>
+    <string>&amp;Show All</string>
    </property>
    <property name="toolTip">
     <string>Show all files</string>
    </property>
   </action>
   <action name="actionAddFolder">
+   <property name="icon">
+    <iconset resource="modlibrary.qrc">
+     <normaloff>:/ModLibrary/Resources/NewFolderHS.png</normaloff>:/ModLibrary/Resources/NewFolderHS.png</iconset>
+   </property>
    <property name="text">
-    <string>&amp;Add Folder...</string>
+    <string>&amp;Add Folder</string>
    </property>
    <property name="toolTip">
     <string>Add a folder (including subfolders) to the database</string>
    </property>
   </action>
   <action name="actionExportPlaylist">
+   <property name="icon">
+    <iconset resource="modlibrary.qrc">
+     <normaloff>:/ModLibrary/Resources/Playlist.png</normaloff>:/ModLibrary/Resources/Playlist.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Export Playlist</string>
    </property>
@@ -586,11 +616,27 @@ Several individual melodies can be searched for by separating them with a pipe (
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="modlibrary.qrc">
+     <normaloff>:/ModLibrary/Resources/Help.png</normaloff>:/ModLibrary/Resources/Help.png</iconset>
+   </property>
    <property name="text">
-    <string>A&amp;bout...</string>
+    <string>A&amp;bout</string>
    </property>
    <property name="toolTip">
     <string>About Mod Library</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="modlibrary.qrc">
+     <normaloff>:/ModLibrary/Resources/Tools.png</normaloff>:/ModLibrary/Resources/Tools.png</iconset>
+   </property>
+   <property name="text">
+    <string>Se&amp;ttings</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure Mod Library</string>
    </property>
   </action>
  </widget>

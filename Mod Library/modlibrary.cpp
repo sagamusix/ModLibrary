@@ -16,6 +16,7 @@
 #include <QThread>
 #include <QProgressDialog>
 #include <QClipboard>
+#include <QSettings>
 #include <utility>
 #include <libopenmpt/libopenmpt.hpp>
 
@@ -24,6 +25,18 @@ ModLibrary::ModLibrary(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+
+	
+	QSettings settings;
+	settings.beginGroup("Window");
+	resize(settings.value("size", size()).toSize());
+	move(settings.value("pos", pos()).toPoint());
+	if(settings.value("maximized", false).toBool())
+	{
+		setWindowState(windowState() | Qt::WindowMaximized);
+	}
+	settings.endGroup();
+	lastDir = settings.value("lastdir", "").toString();
 
 	try
 	{
@@ -72,6 +85,23 @@ ModLibrary::ModLibrary(QWidget *parent)
 ModLibrary::~ModLibrary()
 {
 
+}
+
+
+void ModLibrary::closeEvent(QCloseEvent *event)
+{
+	QSettings settings;
+	settings.beginGroup("Window");
+	if(!isMaximized())
+	{
+		settings.setValue("size", size());
+		settings.setValue("pos", pos());
+	}
+	settings.setValue("maximized", isMaximized());
+	settings.endGroup();
+	settings.setValue("lastdir", lastDir);
+
+	event->accept();
 }
 
 

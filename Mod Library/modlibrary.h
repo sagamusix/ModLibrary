@@ -40,6 +40,7 @@ protected slots:
 
 protected:
 	void DoSearch(bool showAll);
+	void closeEvent(QCloseEvent *event);
 
 private:
 	Ui_ModLibararyClass ui;

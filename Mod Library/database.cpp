@@ -11,6 +11,7 @@
 #include <QStandardPaths>
 #include <QCryptographicHash>
 #include <QDebug>
+#include <QSettings>
 #include <libopenmpt/libopenmpt.hpp>
 
 #define SCHEMA_VERSION 1
@@ -24,7 +25,7 @@ ModDatabase ModDatabase::instance;
 void ModDatabase::Open()
 {
 	db = QSqlDatabase::addDatabase("QSQLITE");
-	QString dbFile = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + QDir::separator();
+	QString dbFile = QFileInfo(QSettings().fileName()).absoluteDir().absolutePath() + QDir::separator();
 	QDir().mkpath(dbFile);
 	dbFile += "Mod Library.sqlite";
 	const QString dbBackup = dbFile + "~";
