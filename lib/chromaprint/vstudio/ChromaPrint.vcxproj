@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{84960ECE-D619-4F2E-B1B6-5C106A0E2637}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>ChromaPrint</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(Platform)\$(Configuration)\ChromaPrint\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(Platform)\$(Configuration)\ChromaPrint\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;CHROMAPRINT_NODLL;_USE_MATH_DEFINES;WITH_KISSFFT;kiss_fft_scalar=double;_DEBUG;_WINDOWS;_USRDLL;CHROMAPRINT_EXPORTS;_USE_MATH_DEFINES;WITH_KISSFFT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../src;../../kiss_fft</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;CHROMAPRINT_NODLL;_USE_MATH_DEFINES;WITH_KISSFFT;kiss_fft_scalar=double;NDEBUG;_WINDOWS;_USRDLL;CHROMAPRINT_EXPORTS;_USE_MATH_DEFINES;WITH_KISSFFT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../src;../../kiss_fft</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\kiss_fft\kiss_fft.c" />
+    <ClCompile Include="..\..\kiss_fft\tools\kiss_fftr.c" />
+    <ClCompile Include="..\src\audio_processor.cpp" />
+    <ClCompile Include="..\src\avresample\resample2.c" />
+    <ClCompile Include="..\src\base64.cpp" />
+    <ClCompile Include="..\src\chroma.cpp" />
+    <ClCompile Include="..\src\chromaprint.cpp" />
+    <ClCompile Include="..\src\chroma_filter.cpp" />
+    <ClCompile Include="..\src\chroma_resampler.cpp" />
+    <ClCompile Include="..\src\fft.cpp" />
+    <ClCompile Include="..\src\fft_lib_kissfft.cpp" />
+    <ClCompile Include="..\src\filter.cpp" />
+    <ClCompile Include="..\src\fingerprinter.cpp" />
+    <ClCompile Include="..\src\fingerprinter_configuration.cpp" />
+    <ClCompile Include="..\src\fingerprint_calculator.cpp" />
+    <ClCompile Include="..\src\fingerprint_compressor.cpp" />
+    <ClCompile Include="..\src\fingerprint_decompressor.cpp" />
+    <ClCompile Include="..\src\foo.cpp" />
+    <ClCompile Include="..\src\image_builder.cpp" />
+    <ClCompile Include="..\src\integral_image.cpp" />
+    <ClCompile Include="..\src\lloyds.cpp" />
+    <ClCompile Include="..\src\silence_remover.cpp" />
+    <ClCompile Include="..\src\spectral_centroid.cpp" />
+    <ClCompile Include="..\src\spectrum.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\kiss_fft\kiss_fft.h" />
+    <ClInclude Include="..\src\audio_consumer.h" />
+    <ClInclude Include="..\src\audio_processor.h" />
+    <ClInclude Include="..\src\avresample\avcodec.h" />
+    <ClInclude Include="..\src\avresample\dsputil.h" />
+    <ClInclude Include="..\src\base64.h" />
+    <ClInclude Include="..\src\bit_string_reader.h" />
+    <ClInclude Include="..\src\bit_string_writer.h" />
+    <ClInclude Include="..\src\chroma.h" />
+    <ClInclude Include="..\src\chromaprint.h" />
+    <ClInclude Include="..\src\chroma_filter.h" />
+    <ClInclude Include="..\src\chroma_normalizer.h" />
+    <ClInclude Include="..\src\chroma_resampler.h" />
+    <ClInclude Include="..\src\classifier.h" />
+    <ClInclude Include="..\src\combined_buffer.h" />
+    <ClInclude Include="..\src\debug.h" />
+    <ClInclude Include="..\src\decoder.h" />
+    <ClInclude Include="..\src\feature_vector_consumer.h" />
+    <ClInclude Include="..\src\fft.h" />
+    <ClInclude Include="..\src\fft_frame.h" />
+    <ClInclude Include="..\src\fft_frame_consumer.h" />
+    <ClInclude Include="..\src\fft_lib.h" />
+    <ClInclude Include="..\src\fft_lib_kissfft.h" />
+    <ClInclude Include="..\src\filter.h" />
+    <ClInclude Include="..\src\filter_utils.h" />
+    <ClInclude Include="..\src\fingerprinter.h" />
+    <ClInclude Include="..\src\fingerprinter_configuration.h" />
+    <ClInclude Include="..\src\fingerprint_calculator.h" />
+    <ClInclude Include="..\src\fingerprint_compressor.h" />
+    <ClInclude Include="..\src\fingerprint_decompressor.h" />
+    <ClInclude Include="..\src\image.h" />
+    <ClInclude Include="..\src\image_builder.h" />
+    <ClInclude Include="..\src\integral_image.h" />
+    <ClInclude Include="..\src\lloyds.h" />
+    <ClInclude Include="..\src\moving_average.h" />
+    <ClInclude Include="..\src\quantizer.h" />
+    <ClInclude Include="..\src\silence_remover.h" />
+    <ClInclude Include="..\src\spectral_centroid.h" />
+    <ClInclude Include="..\src\spectrum.h" />
+    <ClInclude Include="..\src\utils.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

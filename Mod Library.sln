@@ -10,6 +10,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libopenmpt", "lib\libopenmp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "portaudio", "lib\libopenmpt\build\gen\portaudio.vcxproj", "{189B867F-FF4B-45A1-B741-A97492EE69AF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A4CF5765-A7EF-4099-A738-575EF0C7A55C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChromaPrint", "lib\chromaprint\vstudio\ChromaPrint.vcxproj", "{84960ECE-D619-4F2E-B1B6-5C106A0E2637}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -52,6 +56,15 @@ Global
 		{189B867F-FF4B-45A1-B741-A97492EE69AF}.ReleaseNoLTCG|Win32.Build.0 = ReleaseNoLTCG|Win32
 		{189B867F-FF4B-45A1-B741-A97492EE69AF}.ReleaseNoLTCG|x64.ActiveCfg = ReleaseNoLTCG|x64
 		{189B867F-FF4B-45A1-B741-A97492EE69AF}.ReleaseNoLTCG|x64.Build.0 = ReleaseNoLTCG|x64
+		{84960ECE-D619-4F2E-B1B6-5C106A0E2637}.Debug|Win32.ActiveCfg = Debug|Win32
+		{84960ECE-D619-4F2E-B1B6-5C106A0E2637}.Debug|Win32.Build.0 = Debug|Win32
+		{84960ECE-D619-4F2E-B1B6-5C106A0E2637}.Debug|x64.ActiveCfg = Debug|Win32
+		{84960ECE-D619-4F2E-B1B6-5C106A0E2637}.Release|Win32.ActiveCfg = Release|Win32
+		{84960ECE-D619-4F2E-B1B6-5C106A0E2637}.Release|Win32.Build.0 = Release|Win32
+		{84960ECE-D619-4F2E-B1B6-5C106A0E2637}.Release|x64.ActiveCfg = Release|Win32
+		{84960ECE-D619-4F2E-B1B6-5C106A0E2637}.ReleaseNoLTCG|Win32.ActiveCfg = Release|Win32
+		{84960ECE-D619-4F2E-B1B6-5C106A0E2637}.ReleaseNoLTCG|Win32.Build.0 = Release|Win32
+		{84960ECE-D619-4F2E-B1B6-5C106A0E2637}.ReleaseNoLTCG|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

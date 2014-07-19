@@ -19,13 +19,13 @@ ModInfo::ModInfo(const QString &fileName, QWidget *parent)
 {
 	ui.setupUi(this);
 	QString nativeName = QDir::toNativeSeparators(fileName);
-	setWindowTitle("Module Info: " + QFileInfo(nativeName).fileName());
+	setWindowTitle(tr("Module Info: ") + QFileInfo(nativeName).fileName());
 	ui.fileName->setText(nativeName);
 	this->setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 
 	if(ModDatabase::Instance().UpdateModule(fileName) & ModDatabase::Error)
 	{
-		QMessageBox mb(QMessageBox::Question, "Mod Library", "Error while loading information for file\n" + nativeName + "\nWould you like to remove it form the database?", QMessageBox::Yes | QMessageBox::No);
+		QMessageBox mb(QMessageBox::Question, tr("Mod Library"), tr("Error while loading information for file\n%1\nWould you like to remove it form the database?").arg(nativeName), QMessageBox::Yes | QMessageBox::No);
 		mb.setDefaultButton(QMessageBox::Yes);
 		if(mb.exec() == QMessageBox::Yes)
 		{
@@ -41,12 +41,18 @@ ModInfo::ModInfo(const QString &fileName, QWidget *parent)
 	QString info;
 	if(!mod.artist.isEmpty())
 	{
-		info = "Artist: " + mod.artist + "\n";
+		info = tr("Artist: ") + mod.artist + "\n";
 	}
 	info +=
-		"File Size: " + QString::number(mod.fileSize) + " Bytes\n"
-		"Duration: " + (QString("%1:%2.%3").arg(mod.length / 60000).arg((mod.length / 1000) % 60, 2, 10, QChar('0')).arg((mod.length / 100) % 10)) + "\n" +
-		QString::number(mod.numOrders) + " orders, " + QString::number(mod.numPatterns) + " patterns, " + QString::number(mod.numSamples) + " samples, " + QString::number(mod.numInstruments) + " instruments";
+		tr("File Size: %1 Bytes\nDuration: %2:%3.%4\n%5 orders, %6 patterns, %7 samples, %8 instruments")
+		.arg(mod.fileSize)
+		.arg(mod.length / 60000)
+		.arg((mod.length / 1000) % 60, 2, 10, QChar('0'))
+		.arg((mod.length / 100) % 10)
+		.arg(mod.numOrders)
+		.arg(mod.numPatterns)
+		.arg(mod.numSamples)
+		.arg(mod.numInstruments);
 	ui.varInfo->setPlainText(info);
 
 	setUpdatesEnabled(false);
@@ -89,7 +95,7 @@ void ModInfo::OnOpenFileMenu()
 {
 	QMenu menu(this);
 #ifdef WIN32
-	menu.addAction("&Open in Explorer", this, SLOT(OnOpenExplorer()));
+	menu.addAction(tr("&Open in Explorer"), this, SLOT(OnOpenExplorer()));
 #endif
 	//menu.addAction("&Add Applications...", this, SLOT(OnOpenExplorer()));
 	menu.exec(this->mapToGlobal(ui.openFile->pos() + QPoint(0, ui.openFile->height())));

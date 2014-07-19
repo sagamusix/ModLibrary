@@ -13,6 +13,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <libopenmpt/libopenmpt.hpp>
+#include <chromaprint/src/chromaprint.h>
 
 #define SCHEMA_VERSION 1
 #define VER_HELPER_STRINGIZE(x) #x
@@ -75,6 +76,7 @@ void ModDatabase::Open()
 			"`comments` TEXT, "
 			"`artist` TEXT, "
 			"`personal_comments` TEXT, "
+			"`fingerprint` BLOB COLLATE BINARY, "
 			"`note_data` BLOB COLLATE BINARY)"))
 		{
 			throw Exception("Cannot update library schema: ", query.lastError());
@@ -95,8 +97,8 @@ void ModDatabase::Open()
 
 	insertQuery = QSqlQuery(db);
 	if(!insertQuery.prepare("INSERT INTO `modlib_modules` ("
-		"`hash`, `filename`, `filesize`, `filedate`, `editdate`, `format`, `title`, `length`, `num_channels`, `num_patterns`, `num_orders`, `num_subsongs`, `num_samples`, `num_instruments`, `sample_text`, `instrument_text`, `comments`, `artist`, `note_data`) "
-		" VALUES (:hash, :filename, :filesize, :filedate, :editdate, :format, :title, :length, :num_channels, :num_patterns, :num_orders, :num_subsongs, :num_samples, :num_instruments, :sample_text, :instrument_text, :comments, :artist, :note_data)"))
+		"`hash`, `filename`, `filesize`, `filedate`, `editdate`, `format`, `title`, `length`, `num_channels`, `num_patterns`, `num_orders`, `num_subsongs`, `num_samples`, `num_instruments`, `sample_text`, `instrument_text`, `comments`, `artist`, `fingerprint`, `note_data`) "
+		" VALUES (:hash, :filename, :filesize, :filedate, :editdate, :format, :title, :length, :num_channels, :num_patterns, :num_orders, :num_subsongs, :num_samples, :num_instruments, :sample_text, :instrument_text, :comments, :artist, :fingerprint, :note_data)"))
 	{
 		throw Exception("Cannot prepare insert query: ", insertQuery.lastError());
 	}
@@ -105,7 +107,7 @@ void ModDatabase::Open()
 	if(!updateQuery.prepare("UPDATE `modlib_modules` SET"
 		"`hash` = :hash, `filename` = :filename, `filesize` = :filesize, `filedate` = :filedate, `editdate` = :editdate, `format` = :format, `title` = :title, `length` = :length, "
 		"`num_channels` = :num_channels, `num_patterns` = :num_patterns, `num_orders` = :num_orders, `num_subsongs` = :num_subsongs, `num_samples` = :num_samples, "
-		"`num_instruments` = :num_instruments, `sample_text` = :sample_text, `instrument_text` = :instrument_text, `comments` = :comments, `artist` = :artist, `note_data` = :note_data"
+		"`num_instruments` = :num_instruments, `sample_text` = :sample_text, `instrument_text` = :instrument_text, `comments` = :comments, `artist` = :artist, `fingerprint` = :fingerprint, `note_data` = :note_data"
 		" WHERE `filename` = :filename_old"))
 	{
 		throw Exception("Cannot prepare update query: ", updateQuery.lastError());
@@ -264,6 +266,34 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 		QByteArray notes;
 		BuildNoteString(mod, notes);
 		query.bindValue(":note_data", notes);
+
+		ChromaprintContext *chromaprint_ctx = chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT);
+		const int32_t samplerate = 22050;
+		chromaprint_start(chromaprint_ctx, samplerate, 1);
+		std::vector<int16_t> data(512);
+		double modLength = mod.get_duration_seconds() * samplerate;	// Prevent endless pattern loops
+		while(modLength >= 0.0)
+		{
+			std::size_t count = mod.read(samplerate, data.size(), data.data());
+			modLength -= count;
+			if(!count || !chromaprint_feed(chromaprint_ctx, data.data(), count))
+			{
+				break;
+			}
+		}
+		chromaprint_finish(chromaprint_ctx);
+
+		int raw_fingerprint_size = 0, encoded_fingerprint_size = 0;
+		void *raw_fingerprint = nullptr;
+		char *encoded_fingerprint = nullptr;
+		if(chromaprint_get_raw_fingerprint(chromaprint_ctx, &raw_fingerprint, &raw_fingerprint_size))
+		{
+			chromaprint_encode_fingerprint(raw_fingerprint, raw_fingerprint_size, CHROMAPRINT_ALGORITHM_DEFAULT, (void **)&encoded_fingerprint, &encoded_fingerprint_size, 0);
+		}
+		query.bindValue(":fingerprint", QByteArray(encoded_fingerprint, encoded_fingerprint_size));
+		chromaprint_dealloc(raw_fingerprint);
+		chromaprint_dealloc(encoded_fingerprint);
+		chromaprint_free(chromaprint_ctx);
 
 		if(!query.exec())
 		{

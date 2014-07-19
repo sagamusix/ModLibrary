@@ -118,14 +118,14 @@ void ModLibrary::OnAddFile()
 		}
 	}
 
-	QFileDialog dlg(this, "Select file(s) to add...", lastDir, "Module files (" + modExtensions + ");;All files (*.*)");
+	QFileDialog dlg(this, tr("Select file(s) to add..."), lastDir, tr("Module files") + " (" + modExtensions + ");;" + tr("All files") + " (*.*)");
 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
 	dlg.setFileMode(QFileDialog::ExistingFiles);
 	if(dlg.exec())
 	{
 		auto fileNames = dlg.selectedFiles();
 
-		QProgressDialog progress("Scanning files...", "Cancel", 0, 0, this);
+		QProgressDialog progress(tr("Scanning files..."), tr("Cancel"), 0, 0, this);
 		progress.setWindowModality(Qt::WindowModal);
 		progress.setRange(0, fileNames.size());
 		progress.setValue(0);
@@ -145,7 +145,7 @@ void ModLibrary::OnAddFile()
 
 void ModLibrary::OnAddFolder()
 {
-	QFileDialog dlg(this, "Select folder to add...", lastDir);
+	QFileDialog dlg(this, tr("Select folder to add..."), lastDir);
 	dlg.setFileMode(QFileDialog::DirectoryOnly);
 	if(dlg.exec())
 	{
@@ -154,7 +154,7 @@ void ModLibrary::OnAddFolder()
 
 		QDirIterator di(path, QDir::Files, QDirIterator::Subdirectories);
 
-		QProgressDialog progress("Scanning files...", "Cancel", 0, 0, this);
+		QProgressDialog progress(tr("Scanning files..."), tr("Cancel"), 0, 0, this);
 		progress.setWindowModality(Qt::WindowModal);
 		progress.setRange(0, 0);
 		progress.setValue(0);
@@ -164,7 +164,7 @@ void ModLibrary::OnAddFolder()
 		while(di.hasNext() && !progress.wasCanceled())
 		{
 			const QString fileName = di.next();
-			progress.setLabelText(QString("Analyzing %1...\n%2 files added, %3 files updated.").arg(QDir::toNativeSeparators(fileName)).arg(addedFiles).arg(updatedFiles));
+			progress.setLabelText(tr("Analyzing %1...\n%2 files added, %3 files updated.").arg(QDir::toNativeSeparators(fileName)).arg(addedFiles).arg(updatedFiles));
 			QCoreApplication::processEvents();
 			switch(ModDatabase::Instance().AddModule(fileName))
 			{
@@ -199,7 +199,7 @@ void ModLibrary::OnMaintain()
 	while(query.next() && !progress.wasCanceled())
 	{
 		const QString fileName = query.value(0).toString();
-		progress.setLabelText(QString("Analyzing %1...\n%2 files updated, %3 files removed.").arg(QDir::toNativeSeparators(fileName)).arg(updatedFiles).arg(removedFiles));
+		progress.setLabelText(tr("Analyzing %1...\n%2 files updated, %3 files removed.").arg(QDir::toNativeSeparators(fileName)).arg(updatedFiles).arg(removedFiles));
 		QCoreApplication::processEvents();
 		switch(ModDatabase::Instance().UpdateModule(fileName))
 		{
@@ -311,7 +311,7 @@ void ModLibrary::DoSearch(bool showAll)
 	ui.resultTable->setSortingEnabled(false);
 	setCursor(Qt::BusyCursor);
 
-	// TODO: This stuff is *slow*.
+	// TODO: This stuff is *slow*. Probably requires a custom data model.
 	QString fileName, title, fileDate;
 	int fileSize;
 	while(query.next())
@@ -346,7 +346,7 @@ void ModLibrary::DoSearch(bool showAll)
 	unsetCursor();
 	ui.resultTable->setSortingEnabled(true);
 	ui.resultTable->setUpdatesEnabled(true);
-	ui.statusBar->showMessage(QString("%1 files found.").arg(row));
+	ui.statusBar->showMessage(tr("%1 files found.").arg(row));
 
 	if(row == 1 && !showAll)
 	{
@@ -400,12 +400,12 @@ void ModLibrary::OnExportPlaylist()
 	const auto numRows = ui.resultTable->rowCount();
 	if(!numRows)
 	{
-		QMessageBox mb(QMessageBox::Information, "Your library is empty.", "Mod Library");
+		QMessageBox mb(QMessageBox::Information, tr("Your library is empty."), tr("Mod Library"));
 		mb.exec();
 		return;
 	}
 
-	QFileDialog dlg(this, "Save Playlist...", lastDir, "Playlist files (*.pls)");
+	QFileDialog dlg(this, tr("Save Playlist..."), lastDir, tr("Playlist files (*.pls)"));
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	if(dlg.exec())
 	{
