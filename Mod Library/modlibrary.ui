@@ -466,69 +466,6 @@ Several individual melodies can be searched for by separating them with a pipe (
         </property>
        </spacer>
       </item>
-      <item row="0" column="1" rowspan="6">
-       <widget class="QTableWidget" name="resultTable">
-        <property name="editTriggers">
-         <set>QAbstractItemView::NoEditTriggers</set>
-        </property>
-        <property name="alternatingRowColors">
-         <bool>true</bool>
-        </property>
-        <property name="selectionBehavior">
-         <enum>QAbstractItemView::SelectRows</enum>
-        </property>
-        <property name="sortingEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="columnCount">
-         <number>4</number>
-        </property>
-        <attribute name="horizontalHeaderVisible">
-         <bool>true</bool>
-        </attribute>
-        <attribute name="horizontalHeaderCascadingSectionResizes">
-         <bool>false</bool>
-        </attribute>
-        <attribute name="horizontalHeaderHighlightSections">
-         <bool>false</bool>
-        </attribute>
-        <attribute name="horizontalHeaderStretchLastSection">
-         <bool>false</bool>
-        </attribute>
-        <attribute name="verticalHeaderVisible">
-         <bool>false</bool>
-        </attribute>
-        <column>
-         <property name="text">
-          <string>Title</string>
-         </property>
-         <property name="textAlignment">
-          <set>AlignLeft|AlignVCenter</set>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>File Size</string>
-         </property>
-         <property name="textAlignment">
-          <set>AlignRight|AlignVCenter</set>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Last Modified</string>
-         </property>
-         <property name="textAlignment">
-          <set>AlignLeft|AlignVCenter</set>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Match</string>
-         </property>
-        </column>
-       </widget>
-      </item>
       <item row="4" column="0">
        <widget class="QPushButton" name="doSearch">
         <property name="text">
@@ -580,6 +517,31 @@ Several individual melodies can be searched for by separating them with a pipe (
 Several individual melodies can be searched for by separating them with a pipe (|) character.</string>
          </property>
         </widget>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="6">
+       <widget class="QTableView" name="resultTable">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+        <attribute name="horizontalHeaderHighlightSections">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderDefaultSectionSize">
+         <number>20</number>
+        </attribute>
        </widget>
       </item>
      </layout>

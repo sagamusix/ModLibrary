@@ -11,6 +11,7 @@
 #include "modinfo.h"
 #include "about.h"
 #include "database.h"
+#include "tablemodel.h"
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QThread>
@@ -62,12 +63,10 @@ ModLibrary::ModLibrary(QWidget *parent)
 	connect(ui.actionMaintain, SIGNAL(triggered()), this, SLOT(OnMaintain()));
 	connect(ui.findWhat, SIGNAL(returnPressed()), this, SLOT(OnSearch()));
 	connect(ui.melody, SIGNAL(returnPressed()), this, SLOT(OnSearch()));
+	connect(ui.fingerprint, SIGNAL(returnPressed()), this, SLOT(OnSearch()));
 	connect(ui.pasteMPT, SIGNAL(clicked()), this, SLOT(OnPasteMPT()));
 
-	connect(ui.resultTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellClicked(int, int)));
-	ui.resultTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-	ui.resultTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
-	ui.resultTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
+	connect(ui.resultTable, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OnCellClicked(const QModelIndex &)));
 
 	checkBoxes.push_back(ui.findFilename);
 	checkBoxes.push_back(ui.findTitle);
@@ -224,11 +223,7 @@ void ModLibrary::OnMaintain()
 
 void ModLibrary::DoSearch(bool showAll)
 {
-#ifdef _MSC_VER
-	int CPUInfo[4];
-	__cpuid(CPUInfo, 1);
-	const bool hasPopCnt = (CPUInfo[2] & (1 << 23)) != 0;
-#endif
+	setCursor(Qt::BusyCursor);
 
 	QString what = ui.findWhat->text();
 	what.replace('\\', "\\\\")
@@ -243,13 +238,11 @@ void ModLibrary::DoSearch(bool showAll)
 	uint32_t *rawFingerprint = nullptr;
 	int rawFingerprintSize = 0;
 	chromaprint_decode_fingerprint(fingerprint.data(), fingerprint.size(), (void **)&rawFingerprint, &rawFingerprintSize, nullptr, 1);
-	ui.resultTable->setColumnCount(fingerprint.isEmpty() ? 3 : 4);
 
 	QString queryStr = "SELECT `filename`, `title`, `filesize`, `filedate` ";
-	if(!fingerprint.isEmpty())
+	if(rawFingerprintSize)
 	{
 		queryStr += ", `fingerprint` ";
-		// TODO header name
 
 	}
 	queryStr += "FROM `modlib_modules` ";
@@ -321,140 +314,36 @@ void ModLibrary::DoSearch(bool showAll)
 	{
 		query.bindValue(":note_data" + QString::number(i), melodyBytes[i]);
 	}
-	query.exec();
 
-	//ui.resultTable->setColumnCount(3);
-	ui.resultTable->setRowCount(0);
-	//ui.resultTable->setRowCount(query.size());	// Not supported by sqlite
-	int row = 0;
-	ui.resultTable->setUpdatesEnabled(false);
-	ui.resultTable->setSortingEnabled(false);
-	setCursor(Qt::BusyCursor);
+	TableModel *model = new TableModel(query, rawFingerprint, rawFingerprintSize);
+	ui.resultTable->setModel(model);
 
-	// TODO: This stuff is *slow*. Probably requires a custom data model.
-	QString fileName, title, fileDate;
-	int fileSize;
-	while(query.next())
+	QHeaderView *verticalHeader = ui.resultTable->verticalHeader();
+	verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
+
+	QHeaderView *horizontalHeader = ui.resultTable->horizontalHeader();
+	horizontalHeader->setStretchLastSection(false);
+	horizontalHeader->setSectionResizeMode(0, QHeaderView::Stretch);
+	for(int i = model->columnCount() - 1; i >= 1; i--)
 	{
-		ui.resultTable->insertRow(row);
-
-		fileName = query.value(0).toString();
-		title = query.value(1).toString();
-		fileSize = query.value(2).toInt();
-		fileDate = QDateTime::fromTime_t(query.value("filedate").toInt()).toString(Qt::SystemLocaleShortDate);
-
-		QTableWidgetItem *item = new QTableWidgetItem(title.isEmpty() ? QFileInfo(fileName).fileName() : title);
-		item->setData(Qt::UserRole, fileName);
-		item->setToolTip(QDir::toNativeSeparators(fileName));
-		ui.resultTable->setItem(row, 0, item);
-
-		QString sizeStr;
-		if(fileSize < 1024)
-			sizeStr = QString::number(fileSize) + " B";
-		else if(fileSize < 1024 * 1024)
-			sizeStr = QString::number(fileSize / 1024) + " KiB";
-		else
-			sizeStr = QString("%1.%2 MiB").arg(fileSize / (1024 * 1024)).arg((((fileSize / 1024) % 1024) * 100) / 1024, 2, 10, QChar('0'));
-		item = new QTableWidgetItem(sizeStr);
-		item->setData(Qt::TextAlignmentRole, (int)Qt::AlignRight | Qt::AlignVCenter);
-		ui.resultTable->setItem(row, 1, item);
-
-		ui.resultTable->setItem(row, 2, new QTableWidgetItem(fileDate));
-
-		if(rawFingerprintSize)
-		{
-			auto modFingerprint = query.value(4).toByteArray();
-			uint32_t *modRawFingerprint = nullptr;
-			int modRawFingerprintSize = 0;
-			chromaprint_decode_fingerprint(modFingerprint.data(), modFingerprint.size(), (void **)&modRawFingerprint, &modRawFingerprintSize, nullptr, 0);
-			const auto compareLength = std::min(rawFingerprintSize, modRawFingerprintSize);
-			int differences = 32 * std::abs(rawFingerprintSize - modRawFingerprintSize);
-			const int maxMatches = 32 * std::max(rawFingerprintSize, modRawFingerprintSize);
-#ifdef _MSC_VER
-			if(hasPopCnt)
-			{
-				for(auto i = 0; i < compareLength; i++)
-				{
-					differences += _mm_popcnt_u32(rawFingerprint[i] ^ modRawFingerprint[i]);
-				}
-				/*// Module is longer
-				for(auto i = compareLength; i < modRawFingerprintSize; i++)
-				{
-					differences += _mm_popcnt_u32(modRawFingerprint[i]);
-				}
-				// Compared audio is longer
-				for(auto i = compareLength; i < rawFingerprintSize; i++)
-				{
-					differences += _mm_popcnt_u32(rawFingerprint[i]);
-				}*/
-			} else
-#elif defined(__GNUC__)
-			for(auto i = 0; i < compareLength; i++)
-			{
-				differences += __builtin_popcount(rawFingerprint[i] ^ modRawFingerprint[i]);
-			}
-			/*// Module is longer
-			for(auto i = compareLength; i < modRawFingerprintSize; i++)
-			{
-				differences += __builtin_popcount(modRawFingerprint[i]);
-			}
-			// Compared audio is longer
-			for(auto i = compareLength; i < rawFingerprintSize; i++)
-			{
-				differences += __builtin_popcount(rawFingerprint[i]);
-			}*/
-			if(0)
-#endif
-			{
-				for(auto i = 0; i < compareLength; i++)
-				{
-					uint32_t v = rawFingerprint[i] ^ modRawFingerprint[i];
-					for(; v; differences++)
-					{
-						v &= v - 1;
-					}
-				}
-				/*// Module is longer
-				for(auto i = compareLength; i < modRawFingerprintSize; i++)
-				{
-					uint32_t v = modRawFingerprint[i];
-					for(; v; differences++)
-					{
-						v &= v - 1;
-					}
-				}
-				// Compared audio is longer
-				for(auto i = compareLength; i < rawFingerprintSize; i++)
-				{
-					uint32_t v = rawFingerprint[i];
-					for(; v; differences++)
-					{
-						v &= v - 1;
-					}
-				}*/
-			}
-			chromaprint_dealloc(modRawFingerprint);
-
-			item = new QTableWidgetItem();
-			item->setData(Qt::DisplayRole, (100 * (maxMatches - differences)) / maxMatches);
-			ui.resultTable->setItem(row, 3, item);
-		}
-		
-		ui.resultTable->setRowHeight(row, 20);
-
-		row++;
+		horizontalHeader->setSectionResizeMode(i, QHeaderView::ResizeToContents);
 	}
+
+	const int numRows = model->rowCount();
+	ui.statusBar->showMessage(tr("%1 files found.").arg(numRows));
+
 	unsetCursor();
-	ui.resultTable->setSortingEnabled(true);
-	ui.resultTable->setUpdatesEnabled(true);
-	ui.statusBar->showMessage(tr("%1 files found.").arg(row));
 
-	chromaprint_dealloc(rawFingerprint);
+	if(rawFingerprintSize)
+	{
+		// Sort by match quality when searching for fingerprints
+		ui.resultTable->sortByColumn(3, Qt::DescendingOrder);
+	}
 
-	if(row == 1 && !showAll)
+	if(numRows == 1 && !showAll)
 	{
 		// Show the only result
-		OnCellClicked(0, 0);
+		OnCellClicked(model->index(0, 0));
 	}
 }
 
@@ -485,22 +374,23 @@ void ModLibrary::OnSelectAllButOne(QCheckBoxEx *sender)
 }
 
 
-void ModLibrary::OnCellClicked(int row, int /*col*/)
+void ModLibrary::OnCellClicked(const QModelIndex &index)
 {
-	QString fileName = ui.resultTable->item(row, 0)->data(Qt::UserRole).toString();
-	ModInfo dlg(fileName, this);
-	dlg.exec();
+	const QString fileName = ui.resultTable->model()->data(index, Qt::UserRole).toString();
+	ModInfo *dlg = new ModInfo(fileName, this);
+	dlg->setAttribute(Qt::WA_DeleteOnClose);
+	dlg->show();
 }
 
 
 void ModLibrary::OnExportPlaylist()
 {
-	if(!ui.resultTable->rowCount())
+	if(!ui.resultTable->model()->rowCount())
 	{
 		OnShowAll();
 	}
 
-	const auto numRows = ui.resultTable->rowCount();
+	const auto numRows = ui.resultTable->model()->rowCount();
 	if(!numRows)
 	{
 		QMessageBox mb(QMessageBox::Information, tr("Your library is empty."), tr("Mod Library"));
@@ -524,9 +414,8 @@ void ModLibrary::OnExportPlaylist()
 				fout << "numberofentries=" << numRows << endl;
 				for(auto row = 0; row < numRows; row++)
 				{
-					ui.resultTable->item(row, 0)->data(Qt::UserRole).toString();
-					fout << "file" << (row + 1) << "=" << QDir::toNativeSeparators(ui.resultTable->item(row, 0)->data(Qt::UserRole).toString()) << endl;
-					fout << "title" << (row + 1) << "=" << ui.resultTable->item(row, 0)->text() << endl;
+					fout << "file" << (row + 1) << "=" << QDir::toNativeSeparators(ui.resultTable->model()->data(ui.resultTable->model()->index(row, 0), Qt::UserRole).toString()) << endl;
+					fout << "title" << (row + 1) << "=" << ui.resultTable->model()->data(ui.resultTable->model()->index(row, 0), Qt::DisplayRole).toString() << endl;
 				}
 				unsetCursor();
 			}

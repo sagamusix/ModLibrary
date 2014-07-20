@@ -83,6 +83,12 @@
     <ClCompile Include="GeneratedFiles\Release\moc_about.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_tablemodel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_tablemodel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="modlibrary.h">
@@ -114,6 +120,9 @@
     </CustomBuild>
     <CustomBuild Include="settings.ui">
       <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tablemodel.h">
+      <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
