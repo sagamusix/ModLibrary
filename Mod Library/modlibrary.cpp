@@ -332,13 +332,13 @@ void ModLibrary::DoSearch(bool showAll)
 	const int numRows = model->rowCount();
 	ui.statusBar->showMessage(tr("%1 files found.").arg(numRows));
 
-	unsetCursor();
-
 	if(rawFingerprintSize)
 	{
 		// Sort by match quality when searching for fingerprints
 		ui.resultTable->sortByColumn(3, Qt::DescendingOrder);
 	}
+
+	unsetCursor();
 
 	if(numRows == 1 && !showAll)
 	{
