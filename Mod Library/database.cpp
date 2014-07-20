@@ -14,6 +14,7 @@
 #include <QSettings>
 #include <libopenmpt/libopenmpt.hpp>
 #include <chromaprint/src/chromaprint.h>
+#include <chromaprint/src/base64.h>
 
 #define SCHEMA_VERSION 1
 #define VER_HELPER_STRINGIZE(x) #x
@@ -125,6 +126,12 @@ void ModDatabase::Open()
 	if(!selectQuery.prepare("SELECT * FROM `modlib_modules` WHERE `filename` = :filename"))
 	{
 		throw Exception("Cannot prepare select query: ", selectQuery.lastError());
+	}
+
+	fpQuery = QSqlQuery(db);
+	if(!fpQuery.prepare("SELECT `fingerprint` FROM `modlib_modules` WHERE `filename` = :filename"))
+	{
+		throw Exception("Cannot prepare fingerprint query: ", selectQuery.lastError());
 	}
 
 	removeQuery = QSqlQuery(db);
@@ -272,6 +279,7 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 		chromaprint_start(chromaprint_ctx, samplerate, 1);
 		std::vector<int16_t> data(512);
 		double modLength = mod.get_duration_seconds() * samplerate;	// Prevent endless pattern loops
+		mod.set_render_param(openmpt::module::RENDER_INTERPOLATIONFILTER_LENGTH, 2);
 		while(modLength >= 0.0)
 		{
 			std::size_t count = mod.read(samplerate, data.size(), data.data());
@@ -283,16 +291,16 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 		}
 		chromaprint_finish(chromaprint_ctx);
 
-		int raw_fingerprint_size = 0, encoded_fingerprint_size = 0;
-		void *raw_fingerprint = nullptr;
-		char *encoded_fingerprint = nullptr;
-		if(chromaprint_get_raw_fingerprint(chromaprint_ctx, &raw_fingerprint, &raw_fingerprint_size))
+		int rawFingerprintSize = 0, encodedFingerprintSize = 0;
+		void *rawFingerprint = nullptr;
+		char *encodedFingerprint = nullptr;
+		if(chromaprint_get_raw_fingerprint(chromaprint_ctx, &rawFingerprint, &rawFingerprintSize))
 		{
-			chromaprint_encode_fingerprint(raw_fingerprint, raw_fingerprint_size, CHROMAPRINT_ALGORITHM_DEFAULT, (void **)&encoded_fingerprint, &encoded_fingerprint_size, 0);
+			chromaprint_encode_fingerprint(rawFingerprint, rawFingerprintSize, CHROMAPRINT_ALGORITHM_DEFAULT, (void **)&encodedFingerprint, &encodedFingerprintSize, 0);
 		}
-		query.bindValue(":fingerprint", QByteArray(encoded_fingerprint, encoded_fingerprint_size));
-		chromaprint_dealloc(raw_fingerprint);
-		chromaprint_dealloc(encoded_fingerprint);
+		query.bindValue(":fingerprint", QByteArray(encodedFingerprint, encodedFingerprintSize));
+		chromaprint_dealloc(rawFingerprint);
+		chromaprint_dealloc(encodedFingerprint);
 		chromaprint_free(chromaprint_ctx);
 
 		if(!query.exec())
@@ -339,6 +347,16 @@ void ModDatabase::GetModule(QSqlQuery &query, Module &mod)
 	mod.comments = query.value("comments").toString();
 	mod.artist = query.value("artist").toString();
 	mod.personalComment = query.value("personal_comments").toString();
+}
+
+
+QString ModDatabase::GetPrintableFingerprint(const QString &path)
+{
+	fpQuery.bindValue(":filename", QDir::fromNativeSeparators(path));
+	fpQuery.exec();
+	fpQuery.next();
+	const QByteArray fingerprint = fpQuery.value(0).toByteArray();
+	return QString::fromStdString(Chromaprint::Base64Encode(std::string(fingerprint.constBegin(), fingerprint.constEnd())));
 }
 
 

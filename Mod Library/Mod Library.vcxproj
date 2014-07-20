@@ -212,7 +212,7 @@
     <ProjectReference Include="..\..\..\Commit\libopenmpt\libopenmpt.vcxproj">
       <Project>{812a654d-99be-4d13-b97f-86332ad3e363}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\lib\chromaprint\ChromaPrint\ChromaPrint\ChromaPrint.vcxproj">
+    <ProjectReference Include="..\lib\chromaprint\vstudio\ChromaPrint.vcxproj">
       <Project>{84960ece-d619-4f2e-b1b6-5c106a0e2637}</Project>
     </ProjectReference>
   </ItemGroup>

@@ -41,6 +41,13 @@
      <item row="6" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
+        <widget class="QPushButton" name="copyFingerprint">
+         <property name="text">
+          <string>Copy &amp;AcoustID</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>

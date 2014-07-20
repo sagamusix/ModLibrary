@@ -12,6 +12,7 @@
 #include "audioplayer.h"
 #include <QMenu>
 #include <QMessageBox>
+#include <QClipboard>
 
 
 ModInfo::ModInfo(const QString &fileName, QWidget *parent)
@@ -78,6 +79,7 @@ ModInfo::ModInfo(const QString &fileName, QWidget *parent)
 	connect(ui.openFile, SIGNAL(clicked()), this, SLOT(OnOpenFileMenu()));
 	connect(ui.play, SIGNAL(clicked()), this, SLOT(OnPlay()));
 	connect(ui.volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(OnVolumeChanged(int)));
+	connect(ui.copyFingerprint, SIGNAL(clicked()), this, SLOT(OnCopyFingerprint()));
 }
 
 
@@ -144,4 +146,10 @@ void ModInfo::OnVolumeChanged(int volume)
 	{
 		audio->setVolume(volume);
 	}
+}
+
+
+void ModInfo::OnCopyFingerprint()
+{
+	QApplication::clipboard()->setText(ModDatabase::Instance().GetPrintableFingerprint(fileName));
 }

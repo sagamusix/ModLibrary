@@ -37,6 +37,7 @@ protected slots:
 	void OnOpenExplorer();
 	void OnPlay();
 	void OnVolumeChanged(int);
+	void OnCopyFingerprint();
 
 private:
 	Ui_ModInfo ui;

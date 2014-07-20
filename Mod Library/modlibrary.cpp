@@ -19,6 +19,8 @@
 #include <QSettings>
 #include <utility>
 #include <libopenmpt/libopenmpt.hpp>
+#include <chromaprint/src/chromaprint.h>
+#include <smmintrin.h>
 
 
 ModLibrary::ModLibrary(QWidget *parent)
@@ -222,6 +224,12 @@ void ModLibrary::OnMaintain()
 
 void ModLibrary::DoSearch(bool showAll)
 {
+#ifdef _MSC_VER
+	int CPUInfo[4];
+	__cpuid(CPUInfo, 1);
+	const bool hasPopCnt = (CPUInfo[2] & (1 << 23)) != 0;
+#endif
+
 	QString what = ui.findWhat->text();
 	what.replace('\\', "\\\\")
 		.replace('%', "\\%")
@@ -231,8 +239,20 @@ void ModLibrary::DoSearch(bool showAll)
 	what = "%" + what + "%";
 
 	std::vector<QByteArray> melodyBytes;
+	QByteArray fingerprint = ui.fingerprint->text().trimmed().toLatin1();
+	uint32_t *rawFingerprint = nullptr;
+	int rawFingerprintSize = 0;
+	chromaprint_decode_fingerprint(fingerprint.data(), fingerprint.size(), (void **)&rawFingerprint, &rawFingerprintSize, nullptr, 1);
+	ui.resultTable->setColumnCount(fingerprint.isEmpty() ? 3 : 4);
 
-	QString queryStr = "SELECT `filename`, `title`, `filesize`, `filedate` FROM `modlib_modules` ";
+	QString queryStr = "SELECT `filename`, `title`, `filesize`, `filedate` ";
+	if(!fingerprint.isEmpty())
+	{
+		queryStr += ", `fingerprint` ";
+		// TODO header name
+
+	}
+	queryStr += "FROM `modlib_modules` ";
 	if(!showAll)
 	{
 		queryStr += "WHERE (0 ";
@@ -340,13 +360,96 @@ void ModLibrary::DoSearch(bool showAll)
 		ui.resultTable->setItem(row, 1, item);
 
 		ui.resultTable->setItem(row, 2, new QTableWidgetItem(fileDate));
+
+		if(rawFingerprintSize)
+		{
+			auto modFingerprint = query.value(4).toByteArray();
+			uint32_t *modRawFingerprint = nullptr;
+			int modRawFingerprintSize = 0;
+			chromaprint_decode_fingerprint(modFingerprint.data(), modFingerprint.size(), (void **)&modRawFingerprint, &modRawFingerprintSize, nullptr, 0);
+			const auto compareLength = std::min(rawFingerprintSize, modRawFingerprintSize);
+			int differences = 32 * std::abs(rawFingerprintSize - modRawFingerprintSize);
+			const int maxMatches = 32 * std::max(rawFingerprintSize, modRawFingerprintSize);
+#ifdef _MSC_VER
+			if(hasPopCnt)
+			{
+				for(auto i = 0; i < compareLength; i++)
+				{
+					differences += _mm_popcnt_u32(rawFingerprint[i] ^ modRawFingerprint[i]);
+				}
+				/*// Module is longer
+				for(auto i = compareLength; i < modRawFingerprintSize; i++)
+				{
+					differences += _mm_popcnt_u32(modRawFingerprint[i]);
+				}
+				// Compared audio is longer
+				for(auto i = compareLength; i < rawFingerprintSize; i++)
+				{
+					differences += _mm_popcnt_u32(rawFingerprint[i]);
+				}*/
+			} else
+#elif defined(__GNUC__)
+			for(auto i = 0; i < compareLength; i++)
+			{
+				differences += __builtin_popcount(rawFingerprint[i] ^ modRawFingerprint[i]);
+			}
+			/*// Module is longer
+			for(auto i = compareLength; i < modRawFingerprintSize; i++)
+			{
+				differences += __builtin_popcount(modRawFingerprint[i]);
+			}
+			// Compared audio is longer
+			for(auto i = compareLength; i < rawFingerprintSize; i++)
+			{
+				differences += __builtin_popcount(rawFingerprint[i]);
+			}*/
+			if(0)
+#endif
+			{
+				for(auto i = 0; i < compareLength; i++)
+				{
+					uint32_t v = rawFingerprint[i] ^ modRawFingerprint[i];
+					for(; v; differences++)
+					{
+						v &= v - 1;
+					}
+				}
+				/*// Module is longer
+				for(auto i = compareLength; i < modRawFingerprintSize; i++)
+				{
+					uint32_t v = modRawFingerprint[i];
+					for(; v; differences++)
+					{
+						v &= v - 1;
+					}
+				}
+				// Compared audio is longer
+				for(auto i = compareLength; i < rawFingerprintSize; i++)
+				{
+					uint32_t v = rawFingerprint[i];
+					for(; v; differences++)
+					{
+						v &= v - 1;
+					}
+				}*/
+			}
+			chromaprint_dealloc(modRawFingerprint);
+
+			item = new QTableWidgetItem();
+			item->setData(Qt::DisplayRole, (100 * (maxMatches - differences)) / maxMatches);
+			ui.resultTable->setItem(row, 3, item);
+		}
+		
 		ui.resultTable->setRowHeight(row, 20);
+
 		row++;
 	}
 	unsetCursor();
 	ui.resultTable->setSortingEnabled(true);
 	ui.resultTable->setUpdatesEnabled(true);
 	ui.statusBar->showMessage(tr("%1 files found.").arg(row));
+
+	chromaprint_dealloc(rawFingerprint);
 
 	if(row == 1 && !showAll)
 	{

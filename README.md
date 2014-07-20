@@ -37,6 +37,16 @@ Mod Library has the following external dependencies:
     lib/libopempt/include/portaudio/ as the libopenmpt Windows package already
     comes with its own PortAudio package.
 
+ -  KissFFT (https://sourceforge.net/projects/kissfft)
+ 
+    The Visual Studio solution assumes this to be placed in the folder
+    lib/kiss_fft/
+
+ -  Chromaprint (http://acoustid.org/chromaprint)
+ 
+    The Visual Studio solution assumes this to be placed in the folder
+    lib/chromaprint/
+
 Contact
 -------
 

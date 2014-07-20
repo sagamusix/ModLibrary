@@ -40,7 +40,7 @@ class ModDatabase
 protected:
 	static ModDatabase instance;
 	QSqlDatabase db;
-	QSqlQuery insertQuery, updateQuery, updateCommentsQuery, selectQuery, removeQuery;
+	QSqlQuery insertQuery, updateQuery, updateCommentsQuery, selectQuery, fpQuery, removeQuery;
 
 public:
 	enum AddResult
@@ -75,6 +75,7 @@ public:
 	bool UpdateComments(const QString &path, const QString &comments);
 	void GetModule(const QString &path, Module &mod);
 	static void GetModule(QSqlQuery &query, Module &mod);
+	QString GetPrintableFingerprint(const QString &path);
 	bool RemoveModule(const QString &path);
 
 	QSqlDatabase &GetDB() { return db; }
