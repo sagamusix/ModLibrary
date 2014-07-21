@@ -16,6 +16,7 @@
 #include <QFileInfo>
 #include <QDateTime>
 #include <QSize>
+#include "naturalcompare.h"
 
 
 class TableModel : public QAbstractTableModel
@@ -33,9 +34,11 @@ public:
 		Entry() : match(-1) { }
 	};
 
+	enum { FILENAME_COLUMN = 0, TITLE_COLUMN = 1, FILESIZE_COLUMN = 2, FILEDATE_COLUMN = 3, FINGERPRINT_COLUMN = 4, };
+
 	mutable QSqlQuery query;
 	std::vector<Entry> modules;
-	std::vector<Entry *> modulesSorted;
+	std::vector<Entry *> modulesSorted;	// Module order according to current sorting scheme
 
 	uint32_t *rawFingerprint;
 	int rawFingerprintSize;
@@ -81,11 +84,12 @@ public:
 		{
 			return false;
 		}
-		entry.fileName = query.value(0).toString();
-		entry.title = query.value(1).toString();
+
+		entry.fileName = query.value(FILENAME_COLUMN).toString();
+		entry.title = query.value(TITLE_COLUMN).toString();
 		if(entry.title.isEmpty()) entry.title = QFileInfo(entry.fileName).fileName();
-		entry.fileSize = query.value(2).toInt();
-		entry.fileDate = query.value("filedate").toInt();
+		entry.fileSize = query.value(FILESIZE_COLUMN).toInt();
+		entry.fileDate = query.value(FILEDATE_COLUMN).toInt();
 		entry.dateStr = QDateTime::fromTime_t(entry.fileDate).toString(Qt::SystemLocaleShortDate);
 
 		if(entry.fileSize < 1024)
@@ -97,13 +101,14 @@ public:
 
 		if(rawFingerprintSize)
 		{
-			auto modFingerprint = query.value(4).toByteArray();
+			auto modFingerprint = query.value(FINGERPRINT_COLUMN).toByteArray();
 			uint32_t *modRawFingerprint = nullptr;
 			int modRawFingerprintSize = 0;
 			chromaprint_decode_fingerprint(modFingerprint.data(), modFingerprint.size(), (void **)&modRawFingerprint, &modRawFingerprintSize, nullptr, 0);
 			const auto compareLength = std::min(rawFingerprintSize, modRawFingerprintSize);
 			int differences = 32 * std::abs(rawFingerprintSize - modRawFingerprintSize);
 			const int maxMatches = 32 * std::max(rawFingerprintSize, modRawFingerprintSize);
+			// TODO: Match fingerprints with sliding offset (like in maep's meesd.c)
 #ifdef _MSC_VER
 			if(hasPopCnt)
 			{
@@ -205,7 +210,7 @@ public:
 		switch(column)
 		{
 		case 0:
-			std::sort(modulesSorted.begin(), modulesSorted.end(), [](const Entry *a, const Entry *b) { return a->title == b->title; });
+			std::sort(modulesSorted.begin(), modulesSorted.end(), [](const Entry *a, const Entry *b) { return naturalCompare(a->title, b->title, Qt::CaseInsensitive) < 0; });
 			break;
 		case 1:
 			std::sort(modulesSorted.begin(), modulesSorted.end(), [](const Entry *a, const Entry *b) { return a->fileSize < b->fileSize; });

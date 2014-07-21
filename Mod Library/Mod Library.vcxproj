@@ -173,6 +173,7 @@
     </CustomBuild>
     <ClInclude Include="GeneratedFiles\ui_about.h" />
     <ClInclude Include="GeneratedFiles\ui_settings.h" />
+    <ClInclude Include="naturalcompare.h" />
     <ClInclude Include="resource.h" />
     <CustomBuild Include="audioplayer.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

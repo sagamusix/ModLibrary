@@ -40,10 +40,6 @@ ModInfo::ModInfo(const QString &fileName, QWidget *parent)
 	ModDatabase::Instance().GetModule(fileName, mod);
 	ui.songTitle->setText(mod.title);
 	QString info;
-	if(!mod.artist.isEmpty())
-	{
-		info = tr("Artist: ") + mod.artist + "\n";
-	}
 	info +=
 		tr("File Size: %1 Bytes\nDuration: %2:%3.%4\n%5 orders, %6 patterns, %7 samples, %8 instruments")
 		.arg(mod.fileSize)
@@ -55,6 +51,7 @@ ModInfo::ModInfo(const QString &fileName, QWidget *parent)
 		.arg(mod.numSamples)
 		.arg(mod.numInstruments);
 	ui.varInfo->setPlainText(info);
+	ui.editArtist->setText(mod.artist);
 
 	setUpdatesEnabled(false);
 	auto names = mod.sampleText.split('\n');
@@ -89,7 +86,7 @@ ModInfo::~ModInfo()
 	{
 		audio->kill = true;
 	}
-	ModDatabase::Instance().UpdateComments(fileName, ui.personalComments->toPlainText());
+	ModDatabase::Instance().UpdateCustom(fileName, ui.editArtist->text(), ui.personalComments->toPlainText());
 }
 
 

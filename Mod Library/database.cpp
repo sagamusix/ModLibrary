@@ -114,12 +114,13 @@ void ModDatabase::Open()
 		throw Exception("Cannot prepare update query: ", updateQuery.lastError());
 	}
 
-	updateCommentsQuery = QSqlQuery(db);
-	if(!updateCommentsQuery.prepare("UPDATE `modlib_modules` SET"
-		"`personal_comments` = :personal_comments"
+	updateCustomQuery = QSqlQuery(db);
+	if(!updateCustomQuery.prepare("UPDATE `modlib_modules` SET"
+		" `artist` = :artist,"
+		" `personal_comments` = :personal_comments"
 		" WHERE `filename` = :filename"))
 	{
-		throw Exception("Cannot prepare update comments query: ", updateCommentsQuery.lastError());
+		throw Exception("Cannot prepare update comments query: ", updateCustomQuery.lastError());
 	}
 
 	selectQuery = QSqlQuery(db);
@@ -167,11 +168,12 @@ ModDatabase::AddResult ModDatabase::UpdateModule(const QString &path)
 }
 
 
-bool ModDatabase::UpdateComments(const QString &path, const QString &comments)
+bool ModDatabase::UpdateCustom(const QString &path, const QString &artist, const QString &comments)
 {
-	updateCommentsQuery.bindValue(":filename", path);
-	updateCommentsQuery.bindValue(":personal_comments", comments);
-	return updateCommentsQuery.exec();
+	updateCustomQuery.bindValue(":filename", path);
+	updateCustomQuery.bindValue(":artist", artist);
+	updateCustomQuery.bindValue(":personal_comments", comments);
+	return updateCustomQuery.exec();
 }
 
 
@@ -268,7 +270,12 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 			query.bindValue(":instrument_text", instrText);
 		}
 		query.bindValue(":comments", QString::fromStdString(mod.get_metadata("message")));
-		query.bindValue(":artist", QString::fromStdString(mod.get_metadata("artist")));
+		QString artist = QString::fromStdString(mod.get_metadata("artist"));
+		if(artist.isEmpty())
+		{
+			artist = selectQuery.value("artist").toString();
+		}
+		query.bindValue(":artist", artist);
 
 		QByteArray notes;
 		BuildNoteString(mod, notes);
@@ -305,11 +312,13 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 
 		if(!query.exec())
 		{
+			// May happen if identical file already exists
 			qDebug() << query.lastError();
 			return NotAdded;
 		}
-	} catch(openmpt::exception &)
+	} catch(openmpt::exception &e)
 	{
+		qDebug() << e.what();
 		return NotAdded;
 	}
 

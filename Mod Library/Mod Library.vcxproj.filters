@@ -144,6 +144,9 @@
     <ClInclude Include="GeneratedFiles\ui_settings.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="naturalcompare.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Mod Library.rc" />
