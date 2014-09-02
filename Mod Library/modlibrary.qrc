@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="ModLibrary">
+    <file>Resources/CopyHS.png</file>
     <file>Resources/Help.png</file>
     <file>Resources/TableHS.png</file>
     <file>Resources/Playlist.png</file>

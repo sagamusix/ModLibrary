@@ -34,8 +34,10 @@ protected slots:
 	void OnSelectOne(QCheckBoxEx *sender);
 	void OnSelectAllButOne(QCheckBoxEx *sender);
 	void OnCellClicked(const QModelIndex &index);
+	void OnFindDupes();
 	void OnExportPlaylist();
 	void OnPasteMPT();
+	void OnSettings();
 	void OnAbout();
 
 protected:

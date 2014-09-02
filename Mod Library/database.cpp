@@ -58,8 +58,8 @@ void ModDatabase::Open()
 	if(schemaVersion == 0)
 	{
 		if(!query.exec("CREATE TABLE IF NOT EXISTS `modlib_modules` ("
-			"`hash` TEXT PRIMARY KEY, "
-			"`filename` TEXT UNIQUE, "
+			"`hash` TEXT, "
+			"`filename` TEXT PRIMARY KEY, "
 			"`filesize` INT, "
 			"`filedate` INT, "
 			"`editdate` INT, "

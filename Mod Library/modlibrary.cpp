@@ -9,6 +9,7 @@
 
 #include "modlibrary.h"
 #include "modinfo.h"
+#include "settings.h"
 #include "about.h"
 #include "database.h"
 #include "tablemodel.h"
@@ -21,7 +22,9 @@
 #include <utility>
 #include <libopenmpt/libopenmpt.hpp>
 #include <chromaprint/src/chromaprint.h>
+#ifdef _MSC_VER
 #include <smmintrin.h>
+#endif
 
 
 ModLibrary::ModLibrary(QWidget *parent)
@@ -55,7 +58,9 @@ ModLibrary::ModLibrary(QWidget *parent)
 	connect(ui.actionAddFile, SIGNAL(triggered()), this, SLOT(OnAddFile()));
 	connect(ui.actionAddFolder, SIGNAL(triggered()), this, SLOT(OnAddFolder()));
 	connect(ui.actionExportPlaylist, SIGNAL(triggered()), this, SLOT(OnExportPlaylist()));
+	connect(ui.actionSettings, SIGNAL(triggered()), this, SLOT(OnSettings()));
 	connect(ui.actionAbout, SIGNAL(triggered()), this, SLOT(OnAbout()));
+	connect(ui.actionFindDuplicates, SIGNAL(triggered()), this, SLOT(OnFindDupes()));
 
 	// Search navigation
 	connect(ui.doSearch, SIGNAL(clicked()), this, SLOT(OnSearch()));
@@ -161,6 +166,7 @@ void ModLibrary::OnAddFolder()
 		progress.setValue(0);
 		progress.show();
 
+		// TODO: Possibly make this multi-threaded, and allow the users to filter out file types (e.g. .bak)
 		uint addedFiles = 0, updatedFiles = 0;
 		while(di.hasNext() && !progress.wasCanceled())
 		{
@@ -348,6 +354,39 @@ void ModLibrary::DoSearch(bool showAll)
 }
 
 
+void ModLibrary::OnFindDupes()
+{
+	setCursor(Qt::BusyCursor);
+
+	QSqlQuery query(ModDatabase::Instance().GetDB());
+	query.prepare(
+//		"SELECT `filename`, `title`, `filesize`, `filedate` FROM `modlib_modules` AS `m1` WHERE `filename` IN "
+//		"(SELECT `filename` FROM `modlib_modules` AS `m2` WHERE `m1`.`hash` = `m2`.`hash` AND `m1`.`filename` <> `m2`.`filename`) ORDER BY `hash`"
+		"SELECT `filename`, `title`, `filesize`, `filedate`, COUNT(*) FROM `modlib_modules`"
+		"GROUP BY `hash` HAVING COUNT(*) > 1"
+		);
+
+	TableModel *model = new TableModel(query, nullptr, 0);
+	ui.resultTable->setModel(model);
+
+	QHeaderView *verticalHeader = ui.resultTable->verticalHeader();
+	verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
+
+	QHeaderView *horizontalHeader = ui.resultTable->horizontalHeader();
+	horizontalHeader->setStretchLastSection(false);
+	horizontalHeader->setSectionResizeMode(0, QHeaderView::Stretch);
+	for(int i = model->columnCount() - 1; i >= 1; i--)
+	{
+		horizontalHeader->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+	}
+
+	const int numRows = model->rowCount();
+	ui.statusBar->showMessage(tr("%1 files found.").arg(numRows));
+
+	unsetCursor();
+}
+
+
 void ModLibrary::OnSelectOne(QCheckBoxEx *sender)
 {
 	sender->setChecked(true);
@@ -500,6 +539,13 @@ void ModLibrary::OnPasteMPT()
 
 		ui.melody->setText(melody);
 	}
+}
+
+
+void ModLibrary::OnSettings()
+{
+	SettingsDialog dlg(this);
+	dlg.exec();
 }
 
 

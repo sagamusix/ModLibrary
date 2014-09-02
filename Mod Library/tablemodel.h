@@ -19,6 +19,14 @@
 #include "naturalcompare.h"
 
 
+static const uint8_t BitsSetTable256[256] =
+{
+#	define B2(n) n,     n+1,     n+1,     n+2
+#	define B4(n) B2(n), B2(n+1), B2(n+1), B2(n+2)
+#	define B6(n) B4(n), B4(n+1), B4(n+1), B4(n+2)
+	B6(0), B6(1), B6(1), B6(2)
+};
+
 class TableModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -34,7 +42,9 @@ public:
 		Entry() : match(-1) { }
 	};
 
-	enum { FILENAME_COLUMN = 0, TITLE_COLUMN = 1, FILESIZE_COLUMN = 2, FILEDATE_COLUMN = 3, FINGERPRINT_COLUMN = 4, };
+	// Database columns
+	enum DBColumns { FILENAME_COLUMN = 0, TITLE_COLUMN = 1, FILESIZE_COLUMN = 2, FILEDATE_COLUMN = 3, FINGERPRINT_COLUMN = 4, };
+	enum TableColumns { TITLE_TABLE = 0, FILESIZE_TABLE = 1, FILEDATE_TABLE = 2, FINGERPRINT_TABLE = 3, };
 
 	mutable QSqlQuery query;
 	std::vector<Entry> modules;
@@ -106,35 +116,43 @@ public:
 			int modRawFingerprintSize = 0;
 			chromaprint_decode_fingerprint(modFingerprint.data(), modFingerprint.size(), (void **)&modRawFingerprint, &modRawFingerprintSize, nullptr, 0);
 			const auto compareLength = std::min(rawFingerprintSize, modRawFingerprintSize);
-			int differences = 32 * std::abs(rawFingerprintSize - modRawFingerprintSize);
 			const int maxMatches = 32 * std::max(rawFingerprintSize, modRawFingerprintSize);
-			// TODO: Match fingerprints with sliding offset (like in maep's meesd.c)
+			int bestDifference = INT_MAX;
+
+			for(auto offset = 0; offset < 32 && bestDifference > 0; offset++)
+			{
+				const auto thisLength = compareLength - offset;
+				int differences = 32 * std::abs(rawFingerprintSize - modRawFingerprintSize);
 #ifdef _MSC_VER
-			if(hasPopCnt)
-			{
-				for(auto i = 0; i < compareLength; i++)
+				if(hasPopCnt)
 				{
-					differences += _mm_popcnt_u32(rawFingerprint[i] ^ modRawFingerprint[i]);
-				}
-			} else
-#elif defined(__GNUC__)
-			for(auto i = 0; i < compareLength; i++)
-			{
-				differences += __builtin_popcount(rawFingerprint[i] ^ modRawFingerprint[i]);
-			}
-			if(0)
-#endif
-			{
-				for(auto i = 0; i < compareLength; i++)
-				{
-					uint32_t v = rawFingerprint[i] ^ modRawFingerprint[i];
-					for(; v; differences++)
+					for(auto i = 0; i < thisLength; i++)
 					{
-						v &= v - 1;
+						differences += _mm_popcnt_u32(rawFingerprint[offset + i] ^ modRawFingerprint[i]);
+					}
+				} else
+#elif defined(__GNUC__)
+				for(auto i = 0; i < thisLength; i++)
+				{
+					differences += __builtin_popcount(rawFingerprint[offset + i] ^ modRawFingerprint[i]);
+				}
+				if(0)
+#endif
+				{
+					for(auto i = 0; i < thisLength; i++)
+					{
+						union { uint32_t u32; uint8_t u8[4]; } v;
+						v.u32 = rawFingerprint[offset + i] ^ modRawFingerprint[i];
+						differences += BitsSetTable256[v.u8[0]]
+						+ BitsSetTable256[v.u8[1]]
+						+ BitsSetTable256[v.u8[2]]
+						+ BitsSetTable256[v.u8[3]];
 					}
 				}
+				bestDifference = std::min(differences, bestDifference);
 			}
-			entry.match = (100 * (maxMatches - differences)) / maxMatches;
+
+			entry.match = (100 * (maxMatches - bestDifference)) / maxMatches;
 			chromaprint_dealloc(modRawFingerprint);
 		}
 		return true;
@@ -161,13 +179,13 @@ public:
 		{
 			switch(index.column())
 			{
-			case 0:
+			case TITLE_TABLE:
 				return entry.title;
-			case 1:
+			case FILESIZE_TABLE:
 				return entry.sizeStr;
-			case 2:
+			case FILEDATE_TABLE:
 				return entry.dateStr;
-			case 3:
+			case FINGERPRINT_TABLE:
 				return entry.match;
 			}
 		} else if(role == Qt::ToolTipRole || role == Qt::UserRole)
@@ -209,16 +227,16 @@ public:
 
 		switch(column)
 		{
-		case 0:
+		case TITLE_TABLE:
 			std::sort(modulesSorted.begin(), modulesSorted.end(), [](const Entry *a, const Entry *b) { return naturalCompare(a->title, b->title, Qt::CaseInsensitive) < 0; });
 			break;
-		case 1:
+		case FILESIZE_TABLE:
 			std::sort(modulesSorted.begin(), modulesSorted.end(), [](const Entry *a, const Entry *b) { return a->fileSize < b->fileSize; });
 			break;
-		case 2:
+		case FILEDATE_TABLE:
 			std::sort(modulesSorted.begin(), modulesSorted.end(), [](const Entry *a, const Entry *b) { return a->fileDate < b->fileDate; });
 			break;
-		case 3:
+		case FINGERPRINT_TABLE:
 			std::sort(modulesSorted.begin(), modulesSorted.end(), [](const Entry *a, const Entry *b) { return a->match < b->match; });
 			break;
 		}

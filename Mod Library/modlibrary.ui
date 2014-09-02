@@ -513,8 +513,7 @@ Several individual melodies can be searched for by separating them with a pipe (
           </rect>
          </property>
          <property name="toolTip">
-          <string>Enter a melody as a sequence of space-separated relative note offsets.
-Several individual melodies can be searched for by separating them with a pipe (|) character.</string>
+          <string>Paste AcoustID fingerprint</string>
          </property>
         </widget>
        </widget>
@@ -526,6 +525,9 @@ Several individual melodies can be searched for by separating them with a pipe (
         </property>
         <property name="alternatingRowColors">
          <bool>true</bool>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
         </property>
         <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectRows</enum>
@@ -581,6 +583,7 @@ Several individual melodies can be searched for by separating them with a pipe (
    <addaction name="actionAddFolder"/>
    <addaction name="separator"/>
    <addaction name="actionMaintain"/>
+   <addaction name="actionFindDuplicates"/>
    <addaction name="actionShow"/>
    <addaction name="actionExportPlaylist"/>
    <addaction name="separator"/>
@@ -672,6 +675,18 @@ Several individual melodies can be searched for by separating them with a pipe (
     <string>Configure Mod Library</string>
    </property>
   </action>
+  <action name="actionFindDuplicates">
+   <property name="icon">
+    <iconset resource="modlibrary.qrc">
+     <normaloff>:/ModLibrary/Resources/CopyHS.png</normaloff>:/ModLibrary/Resources/CopyHS.png</iconset>
+   </property>
+   <property name="text">
+    <string>Find &amp;Duplicates</string>
+   </property>
+   <property name="toolTip">
+    <string>Find files in the database that have identical content</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -705,6 +720,8 @@ Several individual melodies can be searched for by separating them with a pipe (
   <tabstop>limitTimeMax</tabstop>
   <tabstop>melody</tabstop>
   <tabstop>pasteMPT</tabstop>
+  <tabstop>fingerprint</tabstop>
+  <tabstop>browseFingerprint</tabstop>
   <tabstop>doSearch</tabstop>
   <tabstop>resultTable</tabstop>
  </tabstops>
