@@ -186,6 +186,11 @@ static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 	for(auto s = 0; s < numSongs; s++)
 	{
 		mod.select_subsong(s);
+		if(mod.get_current_order() != 0)
+		{
+			// Ignore hidden subsongs, as we go through the whole oder list anyway.
+			continue;
+		}
 		const auto numOrders = mod.get_num_orders();
 		notes.reserve(notes.size() + numChannels * numOrders * 64);
 		for(auto c = 0; c < numChannels; c++)

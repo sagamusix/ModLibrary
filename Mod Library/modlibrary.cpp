@@ -297,8 +297,9 @@ void ModLibrary::DoSearch(bool showAll)
 		int melodyCount = 0;
 		for(auto melody = melodies.cbegin(); melody != melodies.cend(); melody++)
 		{
-			const auto notes = melody->simplified().split(' ');
-			if(!notes.isEmpty())
+			const auto melodyStr = melody->simplified();
+			const auto notes = melodyStr.split(' ');
+			if(!melodyStr.isEmpty() && !notes.isEmpty())
 			{
 				melodyBytes.push_back(QByteArray());
 				melodyBytes[melodyCount].reserve(notes.size());

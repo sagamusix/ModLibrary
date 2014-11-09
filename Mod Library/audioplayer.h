@@ -26,7 +26,11 @@ public:
 	volatile bool kill;
 
 public:
-	AudioThread(QFile &file, int v) : content(file.readAll()), mod(content.begin(), content.end()), kill(false) { setVolume(v); }
+	AudioThread(QFile &file, int v) : content(file.readAll()), mod(content.begin(), content.end()), kill(false)
+	{
+		mod.select_subsong(-1);	// Play all subsongs consecutively
+		setVolume(v);
+	}
 
 public slots:
 	void process()

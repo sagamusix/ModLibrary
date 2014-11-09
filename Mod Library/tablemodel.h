@@ -201,13 +201,13 @@ public:
 		{
 			switch(section)
 			{
-			case 0:
+			case TITLE_TABLE:
 				return tr("Title");
-			case 1:
+			case FILESIZE_TABLE:
 				return tr("File Size");
-			case 2:
+			case FILEDATE_TABLE:
 				return tr("Last Modified");
-			case 3:
+			case FINGERPRINT_TABLE:
 				return tr("Match %");
 			}
 		}
