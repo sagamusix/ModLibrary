@@ -274,7 +274,7 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 			}
 			query.bindValue(":instrument_text", instrText);
 		}
-		query.bindValue(":comments", QString::fromStdString(mod.get_metadata("message")));
+		query.bindValue(":comments", QString::fromStdString(mod.get_metadata("message_raw")));
 		QString artist = QString::fromStdString(mod.get_metadata("artist"));
 		if(artist.isEmpty())
 		{
