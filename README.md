@@ -24,9 +24,9 @@ various other compilers on operating systems other than Windows, but this is
 currently untested.
 Mod Library has the following external dependencies:
 
- -  Qt 5 (http://qt-project.org/)
+ -  Qt 5 (https://www.qt.io/download/)
  
- -  libopenmpt (http://lib.openmpt.org/)
+ -  libopenmpt (https://lib.openmpt.org/)
  
     The Visual Studio solution assumes this to be placed in the folder
     lib/libopenmpt/
@@ -42,7 +42,7 @@ Mod Library has the following external dependencies:
     The Visual Studio solution assumes this to be placed in the folder
     lib/kiss_fft/
 
- -  Chromaprint (http://acoustid.org/chromaprint)
+ -  Chromaprint (https://acoustid.org/chromaprint)
  
     The Visual Studio solution assumes this to be placed in the folder
     lib/chromaprint/

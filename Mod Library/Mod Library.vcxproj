@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -240,6 +240,15 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Commit\build\vs2010-ext\ogg.vcxproj">
+      <Project>{d8d5e11c-f959-49ef-b741-b3f6de52ded8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Commit\build\vs2010-ext\vorbis.vcxproj">
+      <Project>{b544dcb7-16e5-41bc-b51b-7ead8cfdfa05}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Commit\build\vs2010-ext\zlib.vcxproj">
+      <Project>{1654fb18-fde6-406f-9d84-ba12bfbd67b2}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\lib\chromaprint\vstudio\ChromaPrint.vcxproj">
       <Project>{84960ece-d619-4f2e-b1b6-5c106a0e2637}</Project>
     </ProjectReference>
@@ -297,7 +306,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties UicDir=".\GeneratedFiles" MocDir=".\GeneratedFiles\$(ConfigurationName)" MocOptions="" RccDir=".\GeneratedFiles" lupdateOnBuild="0" lupdateOptions="" lreleaseOptions="" Qt5Version_x0020_Win32="msvc2010_opengl" />
+      <UserProperties UicDir=".\GeneratedFiles" MocDir=".\GeneratedFiles\$(ConfigurationName)" MocOptions="" RccDir=".\GeneratedFiles" lupdateOnBuild="0" lupdateOptions="" lreleaseOptions="" Qt5Version_x0020_Win32="$(DefaultQtVersion)" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
