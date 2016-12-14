@@ -80,10 +80,10 @@ ModLibrary::ModLibrary(QWidget *parent)
 	checkBoxes.push_back(ui.findInstrumentText);
 	checkBoxes.push_back(ui.findComments);
 	checkBoxes.push_back(ui.findPersonal);
-	for(auto cb = checkBoxes.begin(); cb != checkBoxes.end(); cb++)
+	for(auto &cb : checkBoxes)
 	{
-		connect(*cb, SIGNAL(rightClicked(QCheckBoxEx *)), this, SLOT(OnSelectOne(QCheckBoxEx *)));
-		connect(*cb, SIGNAL(middleClicked(QCheckBoxEx *)), this, SLOT(OnSelectAllButOne(QCheckBoxEx *)));
+		connect(cb, SIGNAL(rightClicked(QCheckBoxEx *)), this, SLOT(OnSelectOne(QCheckBoxEx *)));
+		connect(cb, SIGNAL(middleClicked(QCheckBoxEx *)), this, SLOT(OnSelectAllButOne(QCheckBoxEx *)));
 	}
 }
 
@@ -117,10 +117,14 @@ void ModLibrary::OnAddFile()
 	if(modExtensions.isEmpty())
 	{
 		auto exts = openmpt::get_supported_extensions();
-		for(auto ext = exts.cbegin(); ext != exts.cend(); ext++)
+		bool first = true;
+		for(auto &ext : exts)
 		{
-			if(ext != exts.cbegin()) modExtensions += " ";
-			modExtensions += QString("*.") + ext->c_str();
+			if(first)
+				first = false;
+			else
+				modExtensions += " ";
+			modExtensions += QString("*.") + ext.c_str();
 		}
 	}
 
@@ -295,17 +299,17 @@ void ModLibrary::DoSearch(bool showAll)
 		// Search for melody
 		const auto melodies = ui.melody->text().split('|');
 		int melodyCount = 0;
-		for(auto melody = melodies.cbegin(); melody != melodies.cend(); melody++)
+		for(const auto &melody : melodies)
 		{
-			const auto melodyStr = melody->simplified();
+			const auto melodyStr = melody.simplified();
 			const auto notes = melodyStr.split(' ');
 			if(!melodyStr.isEmpty() && !notes.isEmpty())
 			{
 				melodyBytes.push_back(QByteArray());
 				melodyBytes[melodyCount].reserve(notes.size());
-				for(auto note = notes.cbegin(); note != notes.cend(); note++)
+				for(const auto &note : notes)
 				{
-					int8_t n = static_cast<int8_t>(note->toInt());
+					int8_t n = static_cast<int8_t>(note.toInt());
 					melodyBytes[melodyCount].push_back(n);
 				}
 				queryStr += "AND INSTR(`note_data`, :note_data" + QString::number(melodyCount) + ") > 0 ";
@@ -391,11 +395,11 @@ void ModLibrary::OnFindDupes()
 void ModLibrary::OnSelectOne(QCheckBoxEx *sender)
 {
 	sender->setChecked(true);
-	for(auto cb = checkBoxes.begin(); cb != checkBoxes.end(); cb++)
+	for(auto &cb : checkBoxes)
 	{
-		if(sender != *cb)
+		if(sender != cb)
 		{
-			(**cb).setChecked(false);
+			cb->setChecked(false);
 		}
 	}
 }
@@ -404,11 +408,11 @@ void ModLibrary::OnSelectOne(QCheckBoxEx *sender)
 void ModLibrary::OnSelectAllButOne(QCheckBoxEx *sender)
 {
 	sender->setChecked(false);
-	for(auto cb = checkBoxes.begin(); cb != checkBoxes.end(); cb++)
+	for(auto &cb : checkBoxes)
 	{
-		if(sender != *cb)
+		if(sender != cb)
 		{
-			(**cb).setChecked(true);
+			cb->setChecked(true);
 		}
 	}
 }

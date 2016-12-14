@@ -11,3 +11,6 @@
 *.opensdf
 /lib/libopenmpt
 /lib/kiss_fft
+/.vs
+*.vc.db
+*.vc.opendb
