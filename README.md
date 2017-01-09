@@ -52,5 +52,5 @@ Contact
 
 Mod Library was created by Johannes Schultz.
 You can contact me through my websites:
- -  http://sagagames.de/
- -  http://sagamusix.de/
+ -  https://sagagames.de/
+ -  https://sagamusix.de/

@@ -13,10 +13,10 @@
 #include <cstdint>
 #include <algorithm>
 #include <chromaprint/src/chromaprint.h>
-#include <QFileInfo>
+#include <QCollator>
 #include <QDateTime>
+#include <QFileInfo>
 #include <QSize>
-#include "naturalcompare.h"
 
 
 static const uint8_t BitsSetTable256[256] =
@@ -115,31 +115,31 @@ public:
 			uint32_t *modRawFingerprint = nullptr;
 			int modRawFingerprintSize = 0;
 			chromaprint_decode_fingerprint(modFingerprint.data(), modFingerprint.size(), (void **)&modRawFingerprint, &modRawFingerprintSize, nullptr, 0);
-			const auto compareLength = std::min(rawFingerprintSize, modRawFingerprintSize);
+			const int compareLength = std::min(rawFingerprintSize, modRawFingerprintSize);
 			const int maxMatches = 32 * std::max(rawFingerprintSize, modRawFingerprintSize);
 			int bestDifference = INT_MAX;
 
-			for(auto offset = 0; offset < 32 && bestDifference > 0; offset++)
+			for(int offset = 0; offset < 32 && bestDifference > 0; offset++)
 			{
-				const auto thisLength = compareLength - offset;
+				const int thisLength = compareLength - offset;
 				int differences = 32 * std::abs(rawFingerprintSize - modRawFingerprintSize);
 #ifdef _MSC_VER
 				if(hasPopCnt)
 				{
-					for(auto i = 0; i < thisLength; i++)
+					for(int i = 0; i < thisLength; i++)
 					{
 						differences += _mm_popcnt_u32(rawFingerprint[offset + i] ^ modRawFingerprint[i]);
 					}
 				} else
 #elif defined(__GNUC__)
-				for(auto i = 0; i < thisLength; i++)
+				for(int i = 0; i < thisLength; i++)
 				{
 					differences += __builtin_popcount(rawFingerprint[offset + i] ^ modRawFingerprint[i]);
 				}
 				if(0)
 #endif
 				{
-					for(auto i = 0; i < thisLength; i++)
+					for(int i = 0; i < thisLength; i++)
 					{
 						union { uint32_t u32; uint8_t u8[4]; } v;
 						v.u32 = rawFingerprint[offset + i] ^ modRawFingerprint[i];
@@ -217,18 +217,22 @@ public:
 	void sort(int column, Qt::SortOrder order = Qt::AscendingOrder)
 	{
 		// Complete table needs to be cached for sorting, obviously.
-		for(auto i = modules.begin(); i != modules.end(); i++)
+		for(auto &m : modules)
 		{
-			if(i->match == -1)
+			if(m.match == -1)
 			{
-				CacheEntry(*i);
+				CacheEntry(m);
 			}
 		}
+
+		QCollator collator;
+		collator.setNumericMode(true);
+		collator.setCaseSensitivity(Qt::CaseInsensitive);
 
 		switch(column)
 		{
 		case TITLE_TABLE:
-			std::sort(modulesSorted.begin(), modulesSorted.end(), [](const Entry *a, const Entry *b) { return naturalCompare(a->title, b->title, Qt::CaseInsensitive) < 0; });
+			std::sort(modulesSorted.begin(), modulesSorted.end(), [&collator](const Entry *a, const Entry *b) { return collator.compare(a->title, b->title) < 0; });
 			break;
 		case FILESIZE_TABLE:
 			std::sort(modulesSorted.begin(), modulesSorted.end(), [](const Entry *a, const Entry *b) { return a->fileSize < b->fileSize; });
