@@ -19,12 +19,12 @@ file and recreate your module database.
 Dependencies
 ------------
 
-Mod Library is written in C++ using Visual Studio 2010. It should also work on
+Mod Library is written in C++ using Visual Studio 2015. It should also work on
 various other compilers on operating systems other than Windows, but this is
 currently untested.
 Mod Library has the following external dependencies:
 
- -  Qt 5 (https://www.qt.io/download/)
+ -  Qt 5.6 or newer (https://www.qt.io/download/)
  
  -  libopenmpt (https://lib.openmpt.org/)
  
