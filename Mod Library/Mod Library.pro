@@ -4,7 +4,7 @@
 
 TEMPLATE = app
 TARGET = Mod Library
-DESTDIR = ../bin/Release
+DESTDIR = ../bin/Win32/Release
 QT += core multimedia sql widgets gui
 CONFIG += debug
 DEFINES += WIN64 CHROMAPRINT_NODLL QT_DLL QT_WIDGETS_LIB QT_SQL_LIB QT_MULTIMEDIA_LIB LIBOPENMPT_USE_DLL
@@ -12,6 +12,9 @@ INCLUDEPATH += ./GeneratedFiles \
     . \
     ./GeneratedFiles/Release \
     ./../lib \
+    ./../lib/libopenmpt \
+    ./../lib/libopenmpt/include/portaudio/include
+LIBS += -lksuser
 DEPENDPATH += .
 MOC_DIR += ./GeneratedFiles/release
 OBJECTS_DIR += release

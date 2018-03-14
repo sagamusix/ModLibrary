@@ -1,16 +1,16 @@
 *.vo
 *.glob
-/ipch
-/*.sdf
-/*.suo
-/bin/Win32
-/build/Win32
-/Mod Library/GeneratedFiles
+ipch
+*.sdf
+*.suo
+bin
+build
+Mod Library/GeneratedFiles
 *.aps
 *.user
 *.opensdf
-/lib/libopenmpt
-/lib/kiss_fft
-/.vs
+lib/libopenmpt
+lib/kiss_fft
+.vs
 *.vc.db
 *.vc.opendb
