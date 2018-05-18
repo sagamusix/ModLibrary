@@ -49,7 +49,7 @@ ModLibrary::ModLibrary(QWidget *parent)
 	} catch(ModDatabase::Exception &e)
 	{
 		QMessageBox(QMessageBox::Critical, "Mod Library", e.what()).exec();
-		QTimer::singleShot(0, this, SLOT(close()));
+		QTimer::singleShot(0, this, &ModLibrary::close);
 		return;
 	}
 

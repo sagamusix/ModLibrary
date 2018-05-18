@@ -31,7 +31,7 @@ ModInfo::ModInfo(const QString &fileName, QWidget *parent)
 		if(mb.exec() == QMessageBox::Yes)
 		{
 			ModDatabase::Instance().RemoveModule(fileName);
-			QTimer::singleShot(0, this, SLOT(close()));
+			QTimer::singleShot(0, this, &ModInfo::close);
 			return;
 		}
 	}
@@ -72,11 +72,11 @@ ModInfo::ModInfo(const QString &fileName, QWidget *parent)
 	ui.comments->setPlainText(mod.comments);
 	ui.personalComments->setPlainText(mod.personalComment);
 
-	connect(ui.close, SIGNAL(clicked()), this, SLOT(close()));
-	connect(ui.openFile, SIGNAL(clicked()), this, SLOT(OnOpenFileMenu()));
-	connect(ui.play, SIGNAL(clicked()), this, SLOT(OnPlay()));
-	connect(ui.volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(OnVolumeChanged(int)));
-	connect(ui.copyFingerprint, SIGNAL(clicked()), this, SLOT(OnCopyFingerprint()));
+	connect(ui.close, &QPushButton::clicked, this, &ModInfo::close);
+	connect(ui.openFile, &QPushButton::clicked, this, &ModInfo::OnOpenFileMenu);
+	connect(ui.play, &QPushButton::clicked, this, &ModInfo::OnPlay);
+	connect(ui.volumeSlider, &QSlider::valueChanged, this, &ModInfo::OnVolumeChanged);
+	connect(ui.copyFingerprint, &QPushButton::clicked, this, &ModInfo::OnCopyFingerprint);
 }
 
 
@@ -94,9 +94,9 @@ void ModInfo::OnOpenFileMenu()
 {
 	QMenu menu(this);
 #ifdef WIN32
-	menu.addAction(tr("&Open in Explorer"), this, SLOT(OnOpenExplorer()));
+	menu.addAction(tr("&Open in Explorer"), this, &ModInfo::OnOpenExplorer);
 #endif
-	//menu.addAction("&Add Applications...", this, SLOT(OnOpenExplorer()));
+	//menu.addAction("&Add Applications...", this, &ModInfo::OnOpenExplorer);
 	menu.exec(this->mapToGlobal(ui.openFile->pos() + QPoint(0, ui.openFile->height())));
 }
 
@@ -122,10 +122,10 @@ void ModInfo::OnPlay()
 		QThread *thread = new QThread;
 		audio = new AudioThread(file, ui.volumeSlider->value());
 		audio->moveToThread(thread);
-		connect(thread, SIGNAL(started()), audio, SLOT(process()));
-		connect(audio, SIGNAL(finished()), thread, SLOT(quit()));
-		connect(audio, SIGNAL(finished()), audio, SLOT(deleteLater()));
-		connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+		connect(thread, &QThread::started, audio, &AudioThread::process);
+		connect(audio, &AudioThread::finished, thread, &QThread::quit);
+		connect(audio, &AudioThread::finished, audio, &AudioThread::deleteLater);
+		connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 		thread->start();
 		ui.play->setText("&Stop");
 	} else
