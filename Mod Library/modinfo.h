@@ -29,7 +29,7 @@ protected:
 	AudioThread *audio;
 
 public:
-	ModInfo(const QString &fileName, QWidget *parent = 0);
+	ModInfo(const QString &fileName, QWidget *parent = nullptr);
 	~ModInfo();
 
 protected slots:

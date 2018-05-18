@@ -22,7 +22,7 @@ protected:
 	std::vector<QCheckBoxEx *> checkBoxes;
 
 public:
-	ModLibrary(QWidget *parent = 0);
+	ModLibrary(QWidget *parent = nullptr);
 	~ModLibrary();
 
 protected slots:
