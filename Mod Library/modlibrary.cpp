@@ -32,7 +32,6 @@ ModLibrary::ModLibrary(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	
 	QSettings settings;
 	settings.beginGroup("Window");
 	resize(settings.value("size", size()).toSize());
@@ -55,23 +54,23 @@ ModLibrary::ModLibrary(QWidget *parent)
 	}
 
 	// Menu
-	connect(ui.actionAddFile, SIGNAL(triggered()), this, SLOT(OnAddFile()));
-	connect(ui.actionAddFolder, SIGNAL(triggered()), this, SLOT(OnAddFolder()));
-	connect(ui.actionExportPlaylist, SIGNAL(triggered()), this, SLOT(OnExportPlaylist()));
-	connect(ui.actionSettings, SIGNAL(triggered()), this, SLOT(OnSettings()));
-	connect(ui.actionAbout, SIGNAL(triggered()), this, SLOT(OnAbout()));
-	connect(ui.actionFindDuplicates, SIGNAL(triggered()), this, SLOT(OnFindDupes()));
+	connect(ui.actionAddFile, &QAction::triggered, this, &ModLibrary::OnAddFile);
+	connect(ui.actionAddFolder, &QAction::triggered, this, &ModLibrary::OnAddFolder);
+	connect(ui.actionExportPlaylist, &QAction::triggered, this, &ModLibrary::OnExportPlaylist);
+	connect(ui.actionSettings, &QAction::triggered, this, &ModLibrary::OnSettings);
+	connect(ui.actionAbout, &QAction::triggered, this, &ModLibrary::OnAbout);
+	connect(ui.actionFindDuplicates, &QAction::triggered, this, &ModLibrary::OnFindDupes);
 
 	// Search navigation
-	connect(ui.doSearch, SIGNAL(clicked()), this, SLOT(OnSearch()));
-	connect(ui.actionShow, SIGNAL(triggered()), this, SLOT(OnShowAll()));
-	connect(ui.actionMaintain, SIGNAL(triggered()), this, SLOT(OnMaintain()));
-	connect(ui.findWhat, SIGNAL(returnPressed()), this, SLOT(OnSearch()));
-	connect(ui.melody, SIGNAL(returnPressed()), this, SLOT(OnSearch()));
-	connect(ui.fingerprint, SIGNAL(returnPressed()), this, SLOT(OnSearch()));
-	connect(ui.pasteMPT, SIGNAL(clicked()), this, SLOT(OnPasteMPT()));
+	connect(ui.doSearch, &QPushButton::clicked, this, &ModLibrary::OnSearch);
+	connect(ui.actionShow, &QAction::triggered, this, &ModLibrary::OnShowAll);
+	connect(ui.actionMaintain, &QAction::triggered, this, &ModLibrary::OnMaintain);
+	connect(ui.findWhat, &QLineEdit::returnPressed, this, &ModLibrary::OnSearch);
+	connect(ui.melody, &QLineEdit::returnPressed, this, &ModLibrary::OnSearch);
+	connect(ui.fingerprint, &QLineEdit::returnPressed, this, &ModLibrary::OnSearch);
+	connect(ui.pasteMPT, &QPushButton::clicked, this, &ModLibrary::OnPasteMPT);
 
-	connect(ui.resultTable, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OnCellClicked(const QModelIndex &)));
+	connect(ui.resultTable, &QTableView::doubleClicked, this, &ModLibrary::OnCellClicked);
 
 	checkBoxes.push_back(ui.findFilename);
 	checkBoxes.push_back(ui.findTitle);
@@ -82,8 +81,8 @@ ModLibrary::ModLibrary(QWidget *parent)
 	checkBoxes.push_back(ui.findPersonal);
 	for(auto &cb : checkBoxes)
 	{
-		connect(cb, SIGNAL(rightClicked(QCheckBoxEx *)), this, SLOT(OnSelectOne(QCheckBoxEx *)));
-		connect(cb, SIGNAL(middleClicked(QCheckBoxEx *)), this, SLOT(OnSelectAllButOne(QCheckBoxEx *)));
+		connect(cb, &QCheckBoxEx::rightClicked, this, &ModLibrary::OnSelectOne);
+		connect(cb, &QCheckBoxEx::middleClicked, this, &ModLibrary::OnSelectAllButOne);
 	}
 }
 
@@ -116,9 +115,8 @@ void ModLibrary::OnAddFile()
 	static QString modExtensions;
 	if(modExtensions.isEmpty())
 	{
-		auto exts = openmpt::get_supported_extensions();
 		bool first = true;
-		for(auto &ext : exts)
+		for(auto &ext : openmpt::get_supported_extensions())
 		{
 			if(first)
 				first = false;
