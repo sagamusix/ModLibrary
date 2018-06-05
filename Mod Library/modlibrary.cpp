@@ -427,12 +427,12 @@ void ModLibrary::OnCellClicked(const QModelIndex &index)
 
 void ModLibrary::OnExportPlaylist()
 {
-	if(!ui.resultTable->model()->rowCount())
+	if(ui.resultTable->model() == nullptr || !ui.resultTable->model()->rowCount())
 	{
 		OnShowAll();
 	}
 
-	const auto numRows = ui.resultTable->model()->rowCount();
+	const auto numRows = (ui.resultTable->model() == nullptr) ? 0 : ui.resultTable->model()->rowCount();
 	if(!numRows)
 	{
 		QMessageBox mb(QMessageBox::Information, tr("Your library is empty."), tr("Mod Library"));
