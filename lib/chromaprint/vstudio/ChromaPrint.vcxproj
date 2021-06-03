@@ -28,27 +28,27 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -94,6 +94,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;CHROMAPRINT_NODLL;_USE_MATH_DEFINES;WITH_KISSFFT;kiss_fft_scalar=double;_DEBUG;_WINDOWS;_USRDLL;CHROMAPRINT_EXPORTS;_USE_MATH_DEFINES;WITH_KISSFFT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../src;../../kiss_fft</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -108,6 +109,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;CHROMAPRINT_NODLL;_USE_MATH_DEFINES;WITH_KISSFFT;kiss_fft_scalar=double;_DEBUG;_WINDOWS;_USRDLL;CHROMAPRINT_EXPORTS;_USE_MATH_DEFINES;WITH_KISSFFT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../src;../../kiss_fft</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -122,9 +124,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;CHROMAPRINT_NODLL;_USE_MATH_DEFINES;WITH_KISSFFT;kiss_fft_scalar=double;NDEBUG;_WINDOWS;_USRDLL;CHROMAPRINT_EXPORTS;_USE_MATH_DEFINES;WITH_KISSFFT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;CHROMAPRINT_NODLL;_USE_MATH_DEFINES;HAVE_LRINTF;USE_KISSFFT;kiss_fft_scalar=double;NDEBUG;_WINDOWS;_USRDLL;CHROMAPRINT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../src;../../kiss_fft</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,9 +144,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;CHROMAPRINT_NODLL;_USE_MATH_DEFINES;WITH_KISSFFT;kiss_fft_scalar=double;NDEBUG;_WINDOWS;_USRDLL;CHROMAPRINT_EXPORTS;_USE_MATH_DEFINES;WITH_KISSFFT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;CHROMAPRINT_NODLL;_USE_MATH_DEFINES;HAVE_LRINTF;USE_KISSFFT;kiss_fft_scalar=double;NDEBUG;_WINDOWS;_USRDLL;CHROMAPRINT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../src;../../kiss_fft</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,27 +161,22 @@
     <ClCompile Include="..\..\kiss_fft\tools\kiss_fftr.c" />
     <ClCompile Include="..\src\audio_processor.cpp" />
     <ClCompile Include="..\src\avresample\resample2.c" />
-    <ClCompile Include="..\src\base64.cpp" />
     <ClCompile Include="..\src\chroma.cpp" />
     <ClCompile Include="..\src\chromaprint.cpp" />
     <ClCompile Include="..\src\chroma_filter.cpp" />
     <ClCompile Include="..\src\chroma_resampler.cpp" />
     <ClCompile Include="..\src\fft.cpp" />
     <ClCompile Include="..\src\fft_lib_kissfft.cpp" />
-    <ClCompile Include="..\src\filter.cpp" />
     <ClCompile Include="..\src\fingerprinter.cpp" />
     <ClCompile Include="..\src\fingerprinter_configuration.cpp" />
     <ClCompile Include="..\src\fingerprint_calculator.cpp" />
     <ClCompile Include="..\src\fingerprint_compressor.cpp" />
     <ClCompile Include="..\src\fingerprint_decompressor.cpp" />
-    <ClCompile Include="..\src\foo.cpp" />
     <ClCompile Include="..\src\image_builder.cpp" />
-    <ClCompile Include="..\src\integral_image.cpp" />
-    <ClCompile Include="..\src\lloyds.cpp" />
     <ClCompile Include="..\src\silence_remover.cpp" />
     <ClCompile Include="..\src\simhash.cpp" />
-    <ClCompile Include="..\src\spectral_centroid.cpp" />
     <ClCompile Include="..\src\spectrum.cpp" />
+    <ClCompile Include="..\src\utils\base64.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\kiss_fft\kiss_fft.h" />
@@ -185,7 +184,6 @@
     <ClInclude Include="..\src\audio_processor.h" />
     <ClInclude Include="..\src\avresample\avcodec.h" />
     <ClInclude Include="..\src\avresample\dsputil.h" />
-    <ClInclude Include="..\src\base64.h" />
     <ClInclude Include="..\src\bit_string_reader.h" />
     <ClInclude Include="..\src\bit_string_writer.h" />
     <ClInclude Include="..\src\chroma.h" />

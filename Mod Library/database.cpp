@@ -14,7 +14,7 @@
 #include <QSettings>
 #include <libopenmpt/libopenmpt.hpp>
 #include <chromaprint/src/chromaprint.h>
-#include <chromaprint/src/base64.h>
+#include <chromaprint/src/utils/base64.h>
 
 #define SCHEMA_VERSION 1
 #define VER_HELPER_STRINGIZE(x) #x
@@ -180,10 +180,11 @@ bool ModDatabase::UpdateCustom(const QString &path, const QString &artist, const
 // Extract the notes from some module's patterns, as a byte sequence of note deltas.
 static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 {
-	const auto numChannels = mod.get_num_channels();
-	const auto numSongs = mod.get_num_subsongs();
+	const int32_t numChannels = mod.get_num_channels();
+	const int32_t numSongs = mod.get_num_subsongs();
+#if 1
 	int8_t prevNote = 0;
-	for(auto s = 0; s < numSongs; s++)
+	for(int32_t s = 0; s < numSongs; s++)
 	{
 		mod.select_subsong(s);
 		if(mod.get_current_order() != 0)
@@ -191,17 +192,18 @@ static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 			// Ignore hidden subsongs, as we go through the whole oder list anyway.
 			continue;
 		}
-		const auto numOrders = mod.get_num_orders();
+		const int32_t numOrders = mod.get_num_orders();
 		notes.reserve(notes.size() + numChannels * numOrders * 64);
-		for(auto c = 0; c < numChannels; c++)
+		for(int32_t c = 0; c < numChannels; c++)
 		{
 			// Go through the complete sequence channel by channel.
-			if(prevNote) notes.push_back(-prevNote);
-			for(auto o = 0; o < numOrders; o++)
+			if(prevNote)
+				notes.push_back(-prevNote);
+			for(int32_t o = 0; o < numOrders; o++)
 			{
-				const auto p = mod.get_order_pattern(o);
-				const auto numRows = mod.get_pattern_num_rows(p);
-				for(auto r = 0; r < numRows; r++)
+				const int32_t p = mod.get_order_pattern(o);
+				const int32_t numRows = mod.get_pattern_num_rows(p);
+				for(int32_t r = 0; r < numRows; r++)
 				{
 					const uint8_t note = mod.get_pattern_row_channel_command(p, r, c, openmpt::module::command_note);
 					if(note > 0 && note <= 128)
@@ -213,6 +215,43 @@ static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 			}
 		}
 	}
+#else
+	const int32_t numInstruments = mod.get_num_instruments() ? mod.get_num_instruments() : mod.get_num_samples();
+	std::vector<int8_t> prevNote(numInstruments + 1, 0);
+	std::vector<int8_t> prevInstr(numInstruments + 1, 0);
+	std::vector<QByteArray> notesSep(numInstruments + 1);
+	for(int32_t s = 0; s < numSongs; s++)
+	{
+		mod.select_subsong(s);
+		if(mod.get_current_order() != 0)
+		{
+			// Ignore hidden subsongs, as we go through the whole oder list anyway.
+			continue;
+		}
+		const int32_t numOrders = mod.get_num_orders();
+		notes.reserve(notes.size() + numChannels * numOrders * 64);
+		for(int32_t c = 0; c < numChannels; c++)
+		{
+			// Go through the complete sequence channel by channel.
+			if(prevNote[0])
+				notes.push_back(-prevNote[0]);
+			for(int32_t o = 0; o < numOrders; o++)
+			{
+				const int32_t p = mod.get_order_pattern(o);
+				const int32_t numRows = mod.get_pattern_num_rows(p);
+				for(int32_t r = 0; r < numRows; r++)
+				{
+					const uint8_t note = mod.get_pattern_row_channel_command(p, r, c, openmpt::module::command_note);
+					if(note > 0 && note <= 128)
+					{
+						notes.push_back(static_cast<int8_t>(note) - prevNote[0]);
+						prevNote[0] = note;
+					}
+				}
+			}
+		}
+	}
+#endif
 }
 
 
@@ -259,18 +298,18 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 		{
 			QString sampleText;
 			auto names = mod.get_sample_names();
-			for(auto name = names.cbegin(); name != names.cend(); name++)
+			for(const auto &name : names)
 			{
-				sampleText += QString::fromStdString(*name) + "\n";
+				sampleText += QString::fromStdString(name) + "\n";
 			}
 			query.bindValue(":sample_text", sampleText);
 		}
 		{
 			QString instrText;
 			auto names = mod.get_instrument_names();
-			for(auto name = names.cbegin(); name != names.cend(); name++)
+			for(const auto &name : names)
 			{
-				instrText += QString::fromStdString(*name) + "\n";
+				instrText += QString::fromStdString(name) + "\n";
 			}
 			query.bindValue(":instrument_text", instrText);
 		}
@@ -296,7 +335,7 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 		{
 			std::size_t count = mod.read(samplerate, data.size(), data.data());
 			modLength -= count;
-			if(!count || !chromaprint_feed(chromaprint_ctx, data.data(), count))
+			if(!count || !chromaprint_feed(chromaprint_ctx, data.data(), static_cast<int>(count)))
 			{
 				break;
 			}
@@ -304,11 +343,11 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 		chromaprint_finish(chromaprint_ctx);
 
 		int rawFingerprintSize = 0, encodedFingerprintSize = 0;
-		void *rawFingerprint = nullptr;
+		uint32_t *rawFingerprint = nullptr;
 		char *encodedFingerprint = nullptr;
 		if(chromaprint_get_raw_fingerprint(chromaprint_ctx, &rawFingerprint, &rawFingerprintSize))
 		{
-			chromaprint_encode_fingerprint(rawFingerprint, rawFingerprintSize, CHROMAPRINT_ALGORITHM_DEFAULT, (void **)&encodedFingerprint, &encodedFingerprintSize, 0);
+			chromaprint_encode_fingerprint(rawFingerprint, rawFingerprintSize, CHROMAPRINT_ALGORITHM_DEFAULT, &encodedFingerprint, &encodedFingerprintSize, 0);
 		}
 		query.bindValue(":fingerprint", QByteArray(encodedFingerprint, encodedFingerprintSize));
 		chromaprint_dealloc(rawFingerprint);
@@ -345,8 +384,8 @@ void ModDatabase::GetModule(QSqlQuery &query, Module &mod)
 	mod.hash = query.value("hash").toString();
 	mod.fileName = query.value("filename").toString();
 	mod.fileSize = query.value("filesize").toInt();
-	mod.fileDate = QDateTime::fromTime_t(query.value("filedate").toInt());
-	mod.editDate = QDateTime::fromTime_t(query.value("editdate").toInt());
+	mod.fileDate = QDateTime::fromSecsSinceEpoch(query.value("filedate").toInt());
+	mod.editDate = QDateTime::fromSecsSinceEpoch(query.value("editdate").toInt());
 	mod.format = query.value("format").toString();
 	mod.title = query.value("title").toString();
 	mod.length = query.value("length").toInt();
@@ -370,7 +409,7 @@ QString ModDatabase::GetPrintableFingerprint(const QString &path)
 	fpQuery.exec();
 	fpQuery.next();
 	const QByteArray fingerprint = fpQuery.value(0).toByteArray();
-	return QString::fromStdString(Chromaprint::Base64Encode(std::string(fingerprint.constBegin(), fingerprint.constEnd())));
+	return QString::fromStdString(chromaprint::Base64Encode(std::string(fingerprint.constBegin(), fingerprint.constEnd())));
 }
 
 

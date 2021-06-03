@@ -153,11 +153,9 @@ void ModLibrary::OnAddFile()
 
 void ModLibrary::OnAddFolder()
 {
-	QFileDialog dlg(this, tr("Select folder to add..."), lastDir);
-	dlg.setFileMode(QFileDialog::DirectoryOnly);
-	if(dlg.exec())
+	const QString path = QFileDialog::getExistingDirectory(this, tr("Select folder to add..."), lastDir);
+	if(!path.isEmpty())
 	{
-		const QString path = dlg.selectedFiles().first();
 		lastDir = path;
 
 		QDirIterator di(path, QDir::Files, QDirIterator::Subdirectories);
@@ -245,7 +243,7 @@ void ModLibrary::DoSearch(bool showAll)
 	QByteArray fingerprint = ui.fingerprint->text().trimmed().toLatin1();
 	uint32_t *rawFingerprint = nullptr;
 	int rawFingerprintSize = 0;
-	chromaprint_decode_fingerprint(fingerprint.data(), fingerprint.size(), (void **)&rawFingerprint, &rawFingerprintSize, nullptr, 1);
+	chromaprint_decode_fingerprint(fingerprint.data(), fingerprint.size(), &rawFingerprint, &rawFingerprintSize, nullptr, 1);
 
 	QString queryStr = "SELECT `filename`, `title`, `filesize`, `filedate` ";
 	if(rawFingerprintSize)
@@ -275,7 +273,7 @@ void ModLibrary::DoSearch(bool showAll)
 		}
 		if(ui.limitFileDate->isChecked())
 		{
-			auto dateMin = QDateTime(ui.limitFileDateMin->date()).toTime_t();
+			auto dateMin = QDateTime(ui.limitFileDateMin->date(), QTime(0, 0, 0)).toTime_t();
 			auto dateMax = QDateTime(ui.limitFileDateMax->date(), QTime(23, 59, 59)).toTime_t();
 			if(dateMin > dateMax) std::swap(dateMin, dateMax);
 			queryStr += "AND (`filedate` BETWEEN " + QString::number(dateMin) + " AND " + QString::number(dateMax) + ") ";
@@ -452,12 +450,12 @@ void ModLibrary::OnExportPlaylist()
 			{
 				setCursor(Qt::BusyCursor);
 				QTextStream fout(&file);
-				fout << "[playlist]" << endl;
-				fout << "numberofentries=" << numRows << endl;
+				fout << "[playlist]" << Qt::endl;
+				fout << "numberofentries=" << numRows << Qt::endl;
 				for(auto row = 0; row < numRows; row++)
 				{
-					fout << "file" << (row + 1) << "=" << QDir::toNativeSeparators(ui.resultTable->model()->data(ui.resultTable->model()->index(row, 0), Qt::UserRole).toString()) << endl;
-					fout << "title" << (row + 1) << "=" << ui.resultTable->model()->data(ui.resultTable->model()->index(row, 0), Qt::DisplayRole).toString() << endl;
+					fout << "file" << (row + 1) << "=" << QDir::toNativeSeparators(ui.resultTable->model()->data(ui.resultTable->model()->index(row, 0), Qt::UserRole).toString()) << Qt::endl;
+					fout << "title" << (row + 1) << "=" << ui.resultTable->model()->data(ui.resultTable->model()->index(row, 0), Qt::DisplayRole).toString() << Qt::endl;
 				}
 				unsetCursor();
 			}

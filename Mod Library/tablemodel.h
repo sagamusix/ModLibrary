@@ -100,7 +100,7 @@ public:
 		if(entry.title.isEmpty()) entry.title = QFileInfo(entry.fileName).fileName();
 		entry.fileSize = query.value(FILESIZE_COLUMN).toInt();
 		entry.fileDate = query.value(FILEDATE_COLUMN).toInt();
-		entry.dateStr = QDateTime::fromTime_t(entry.fileDate).toString(Qt::SystemLocaleShortDate);
+		entry.dateStr = QLocale::system().toString(QDateTime::fromSecsSinceEpoch(entry.fileDate), QLocale::ShortFormat);
 
 		if(entry.fileSize < 1024)
 			entry.sizeStr = QString::number(entry.fileSize) + " B";
@@ -114,7 +114,7 @@ public:
 			auto modFingerprint = query.value(FINGERPRINT_COLUMN).toByteArray();
 			uint32_t *modRawFingerprint = nullptr;
 			int modRawFingerprintSize = 0;
-			chromaprint_decode_fingerprint(modFingerprint.data(), modFingerprint.size(), (void **)&modRawFingerprint, &modRawFingerprintSize, nullptr, 0);
+			chromaprint_decode_fingerprint(modFingerprint.data(), modFingerprint.size(), &modRawFingerprint, &modRawFingerprintSize, nullptr, 0);
 			const int compareLength = std::min(rawFingerprintSize, modRawFingerprintSize);
 			const int maxMatches = 32 * std::max(rawFingerprintSize, modRawFingerprintSize);
 			int bestDifference = INT_MAX;
