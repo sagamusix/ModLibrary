@@ -364,7 +364,7 @@ void ModLibrary::OnFindDupes()
 //		"SELECT `filename`, `title`, `filesize`, `filedate` FROM `modlib_modules` AS `m1` WHERE `filename` IN "
 //		"(SELECT `filename` FROM `modlib_modules` AS `m2` WHERE `m1`.`hash` = `m2`.`hash` AND `m1`.`filename` <> `m2`.`filename`) ORDER BY `hash`"
 		"SELECT `filename`, `title`, `filesize`, `filedate`, COUNT(*) FROM `modlib_modules`"
-		"GROUP BY `hash` HAVING COUNT(*) > 1"
+		"GROUP BY `pattern_hash` HAVING COUNT(*) > 1"
 		);
 
 	TableModel *model = new TableModel(query, nullptr, 0);

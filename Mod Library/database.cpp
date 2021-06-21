@@ -57,28 +57,32 @@ void ModDatabase::Open()
 
 	if(schemaVersion == 0)
 	{
-		if(!query.exec("CREATE TABLE IF NOT EXISTS `modlib_modules` ("
-			"`hash` TEXT, "
-			"`filename` TEXT PRIMARY KEY, "
-			"`filesize` INT, "
-			"`filedate` INT, "
-			"`editdate` INT, "
-			"`format` TEXT, "
-			"`title` TEXT, "
-			"`length` INT, "
-			"`num_channels` INT, "
-			"`num_patterns` INT, "
-			"`num_orders` INT, "
-			"`num_subsongs` INT, "
-			"`num_samples` INT, "
-			"`num_instruments` INT, "
-			"`sample_text` TEXT, "
-			"`instrument_text` TEXT, "
-			"`comments` TEXT, "
-			"`artist` TEXT, "
-			"`personal_comments` TEXT, "
-			"`fingerprint` BLOB COLLATE BINARY, "
-			"`note_data` BLOB COLLATE BINARY)"))
+		if(!query.exec(R"(
+			CREATE TABLE IF NOT EXISTS `modlib_modules` (
+			`hash` TEXT,
+			`filename` TEXT PRIMARY KEY,
+			`filesize` INT,
+			`filedate` INT,
+			`editdate` INT,
+			`format` TEXT,
+			`title` TEXT,
+			`length` INT,
+			`num_channels` INT,
+			`num_patterns` INT,
+			`num_orders` INT,
+			`num_subsongs` INT,
+			`num_samples` INT,
+			`num_instruments` INT,
+			`sample_text` TEXT,
+			`instrument_text` TEXT,
+			`comments` TEXT,
+			`artist` TEXT,
+			`personal_comments` TEXT,
+			`fingerprint` BLOB COLLATE BINARY,
+			`note_data` BLOB COLLATE BINARY,
+			`pattern_hash` INT
+			)
+			)"))
 		{
 			throw Exception("Cannot update library schema: ", query.lastError());
 		}
@@ -97,28 +101,34 @@ void ModDatabase::Open()
 	}
 
 	insertQuery = QSqlQuery(db);
-	if(!insertQuery.prepare("INSERT INTO `modlib_modules` ("
-		"`hash`, `filename`, `filesize`, `filedate`, `editdate`, `format`, `title`, `length`, `num_channels`, `num_patterns`, `num_orders`, `num_subsongs`, `num_samples`, `num_instruments`, `sample_text`, `instrument_text`, `comments`, `artist`, `fingerprint`, `note_data`) "
-		" VALUES (:hash, :filename, :filesize, :filedate, :editdate, :format, :title, :length, :num_channels, :num_patterns, :num_orders, :num_subsongs, :num_samples, :num_instruments, :sample_text, :instrument_text, :comments, :artist, :fingerprint, :note_data)"))
+	if(!insertQuery.prepare(R"(
+		INSERT INTO `modlib_modules` (
+		`hash`, `filename`, `filesize`, `filedate`, `editdate`, `format`, `title`, `length`, `num_channels`, `num_patterns`, `num_orders`, `num_subsongs`, `num_samples`, `num_instruments`, `sample_text`, `instrument_text`, `comments`, `artist`, `fingerprint`, `note_data`, `pattern_hash`)
+		 VALUES (:hash, :filename, :filesize, :filedate, :editdate, :format, :title, :length, :num_channels, :num_patterns, :num_orders, :num_subsongs, :num_samples, :num_instruments, :sample_text, :instrument_text, :comments, :artist, :fingerprint, :note_data, :pattern_hash)
+		)"))
 	{
 		throw Exception("Cannot prepare insert query: ", insertQuery.lastError());
 	}
 
 	updateQuery = QSqlQuery(db);
-	if(!updateQuery.prepare("UPDATE `modlib_modules` SET"
-		"`hash` = :hash, `filename` = :filename, `filesize` = :filesize, `filedate` = :filedate, `editdate` = :editdate, `format` = :format, `title` = :title, `length` = :length, "
-		"`num_channels` = :num_channels, `num_patterns` = :num_patterns, `num_orders` = :num_orders, `num_subsongs` = :num_subsongs, `num_samples` = :num_samples, "
-		"`num_instruments` = :num_instruments, `sample_text` = :sample_text, `instrument_text` = :instrument_text, `comments` = :comments, `artist` = :artist, `fingerprint` = :fingerprint, `note_data` = :note_data"
-		" WHERE `filename` = :filename_old"))
+	if(!updateQuery.prepare(R"(
+		UPDATE `modlib_modules` SET
+		`hash` = :hash, `filename` = :filename, `filesize` = :filesize, `filedate` = :filedate, `editdate` = :editdate, `format` = :format, `title` = :title, `length` = :length,
+		`num_channels` = :num_channels, `num_patterns` = :num_patterns, `num_orders` = :num_orders, `num_subsongs` = :num_subsongs, `num_samples` = :num_samples,
+		`num_instruments` = :num_instruments, `sample_text` = :sample_text, `instrument_text` = :instrument_text, `comments` = :comments, `artist` = :artist, `fingerprint` = :fingerprint, `note_data` = :note_data, `pattern_hash` = :pattern_hash
+		WHERE `filename` = :filename_old
+		)"))
 	{
 		throw Exception("Cannot prepare update query: ", updateQuery.lastError());
 	}
 
 	updateCustomQuery = QSqlQuery(db);
-	if(!updateCustomQuery.prepare("UPDATE `modlib_modules` SET"
-		" `artist` = :artist,"
-		" `personal_comments` = :personal_comments"
-		" WHERE `filename` = :filename"))
+	if(!updateCustomQuery.prepare(R"(
+		UPDATE `modlib_modules` SET
+		`artist` = :artist,
+		`personal_comments` = :personal_comments
+		WHERE `filename` = :filename
+		)"))
 	{
 		throw Exception("Cannot prepare update comments query: ", updateCustomQuery.lastError());
 	}
@@ -178,12 +188,17 @@ bool ModDatabase::UpdateCustom(const QString &path, const QString &artist, const
 
 
 // Extract the notes from some module's patterns, as a byte sequence of note deltas.
-static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
+static int64_t BuildNoteString(openmpt::module &mod, QByteArray &notes)
 {
 	const int32_t numChannels = mod.get_num_channels();
 	const int32_t numSongs = mod.get_num_subsongs();
+
+	static constexpr uint64_t FNV1a_BASIS = 14695981039346656037ull;
+	static constexpr uint64_t FNV1a_PRIME = 1099511628211ull;
+	uint64_t hash = FNV1a_BASIS;
+
 #if 1
-	int8_t prevNote = 0;
+	int8_t prevNote = 0, prevNoteHash = -1;
 	for(int32_t s = 0; s < numSongs; s++)
 	{
 		mod.select_subsong(s);
@@ -209,7 +224,11 @@ static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 					if(note > 0 && note <= 128)
 					{
 						notes.push_back(static_cast<int8_t>(note) - prevNote);
-						prevNote = note;
+						if(prevNoteHash == -1)
+							prevNoteHash = static_cast<int8_t>(note);
+						const uint8_t noteDiff = static_cast<uint8_t>(static_cast<int8_t>(note) - prevNoteHash);
+						hash = (hash ^ noteDiff) * FNV1a_PRIME;
+						prevNote = prevNoteHash = static_cast<int8_t>(note);
 					}
 				}
 			}
@@ -252,6 +271,7 @@ static void BuildNoteString(openmpt::module &mod, QByteArray &notes)
 		}
 	}
 #endif
+	return static_cast<int64_t>(hash); // Integers are signed in sqlite
 }
 
 
@@ -322,8 +342,9 @@ ModDatabase::AddResult ModDatabase::PrepareQuery(const QString &path, QSqlQuery 
 		query.bindValue(":artist", artist);
 
 		QByteArray notes;
-		BuildNoteString(mod, notes);
+		const auto patternHash = BuildNoteString(mod, notes);
 		query.bindValue(":note_data", notes);
+		query.bindValue(":pattern_hash", patternHash);
 
 		ChromaprintContext *chromaprint_ctx = chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT);
 		const int32_t samplerate = 22050;
